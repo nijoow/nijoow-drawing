@@ -58,14 +58,21 @@ export default function Home() {
 
       setDrawings([
         ...drawings,
-        { id: uuid(), center: { x: centerX, y: centerY }, width, height },
+        {
+          id: uuid(),
+          type: mode.type,
+          subType: mode.subType,
+          center: { x: centerX, y: centerY },
+          width,
+          height,
+        },
       ]);
     }
 
     setPoint(defaultPoint);
     setMode({ type: null, subType: null });
   };
-
+  console.log(drawings);
   return (
     <main className="w-full h-full flex items-center">
       <SideToolBar />
@@ -75,27 +82,77 @@ export default function Home() {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
       >
-        {drawings.map((drawing) => (
-          <svg
-            key={drawing.id}
-            viewBox={`0 0 ${drawing.width} ${drawing.height}`}
-            width={drawing.width}
-            height={drawing.height}
-            style={{
-              left: drawing.center.x - drawing.width / 2,
-              top: drawing.center.y - drawing.height / 2,
-              position: "absolute",
-            }}
-          >
-            <rect
-              x={0}
-              y={0}
-              fill="black"
-              width={drawing.width}
-              height={drawing.height}
-            />
-          </svg>
-        ))}
+        {drawings.map((drawing: any) => {
+          switch (drawing.subType) {
+            case "RECTANGLE":
+              return (
+                <svg
+                  key={drawing.id}
+                  viewBox={`0 0 ${drawing.width} ${drawing.height}`}
+                  width={drawing.width}
+                  height={drawing.height}
+                  style={{
+                    left: drawing.center.x - drawing.width / 2,
+                    top: drawing.center.y - drawing.height / 2,
+                    position: "absolute",
+                  }}
+                >
+                  <rect
+                    x={0}
+                    y={0}
+                    fill="black"
+                    width={drawing.width}
+                    height={drawing.height}
+                  />
+                </svg>
+              );
+            case "TRIANGLE":
+              return (
+                <svg
+                  key={drawing.id}
+                  viewBox={`0 0 ${drawing.width} ${drawing.height}`}
+                  width={drawing.width}
+                  height={drawing.height}
+                  style={{
+                    left: drawing.center.x - drawing.width / 2,
+                    top: drawing.center.y - drawing.height / 2,
+                    position: "absolute",
+                  }}
+                >
+                  <polygon
+                    points={`${drawing.width / 2},0 0,${drawing.height} ${
+                      drawing.width
+                    },${drawing.height}`}
+                    fill="black"
+                  />
+                </svg>
+              );
+            case "ELLIPSE":
+              return (
+                <svg
+                  key={drawing.id}
+                  viewBox={`0 0 ${drawing.width} ${drawing.height}`}
+                  width={drawing.width}
+                  height={drawing.height}
+                  style={{
+                    left: drawing.center.x - drawing.width / 2,
+                    top: drawing.center.y - drawing.height / 2,
+                    position: "absolute",
+                  }}
+                >
+                  <ellipse
+                    cx={drawing.width / 2}
+                    cy={drawing.height / 2}
+                    rx={drawing.width / 2}
+                    ry={drawing.height / 2}
+                    fill="black"
+                  />
+                </svg>
+              );
+            default:
+              break;
+          }
+        })}
       </div>
       {isDragged.current && (
         <div

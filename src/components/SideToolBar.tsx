@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { RiCursorFill, RiPencilFill, RiPenNibFill } from "react-icons/ri";
-import { IoShapes, IoText } from "react-icons/io5";
+import {
+  IoShapes,
+  IoText,
+  IoSquare,
+  IoTriangle,
+  IoEllipse,
+} from "react-icons/io5";
 import { useRecoilState } from "recoil";
 import { modeAtom } from "@/recoil/atoms";
 import { SubToolBar } from "@/types/type";
@@ -53,7 +59,27 @@ export default function SideToolBar() {
                 setOpenSubToolBar({ type: null });
               }}
             >
-              <IoShapes size={20} />
+              <IoSquare size={20} />
+            </button>
+            <button
+              type="button"
+              className="p-2"
+              onClick={() => {
+                setMode({ type: "SHAPE", subType: "ELLIPSE" });
+                setOpenSubToolBar({ type: null });
+              }}
+            >
+              <IoEllipse size={20} />
+            </button>
+            <button
+              type="button"
+              className="p-2"
+              onClick={() => {
+                setMode({ type: "SHAPE", subType: "TRIANGLE" });
+                setOpenSubToolBar({ type: null });
+              }}
+            >
+              <IoTriangle size={20} />
             </button>
           </div>
         )}
