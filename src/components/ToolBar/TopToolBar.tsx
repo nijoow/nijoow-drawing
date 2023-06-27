@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { RiCursorFill, RiPencilFill, RiPenNibFill } from 'react-icons/ri'
 import { IoStop, IoStopOutline } from 'react-icons/io5'
 import { useRecoilState } from 'recoil'
-import { currentOptionsAtom, modeAtom } from '@/recoil/atoms'
-import { OptionsToolBar, SubToolBar } from '@/types/type'
+import { currentOptionsAtom } from '@/recoil/atoms'
+import { OptionsToolBar } from '@/types/type'
+import { ChromePicker } from 'react-color'
 
 export default function TopToolBar() {
   const [currentOptions, setCurrentOptions] = useRecoilState(currentOptionsAtom)
@@ -13,32 +13,50 @@ export default function TopToolBar() {
     type: null,
   })
 
-  console.log(currentOptions)
   return (
     <div className="fixed z-10 flex items-center overflow-visible text-white bg-gray-600 rounded-lg min-w-max left-4 top-4 min-h-fit">
       <div className="relative flex items-center justify-center p-3 w-fit">
         <button
           type="button"
+          className="flex items-center justify-center w-5 h-5 bg-white rounded-sm"
           onClick={() => setOpenSubToolBar({ type: 'FILL' })}
         >
           <IoStop size={20} fill={currentOptions.fill} />
         </button>
         {openSubToolBar.type === 'FILL' && (
           <div className="absolute left-0 flex p-3 bg-gray-600 rounded-lg top-full">
-            FILL
+            <ChromePicker
+              disableAlpha
+              color={currentOptions.fill}
+              onChange={(color) =>
+                setCurrentOptions({ ...currentOptions, fill: color.hex })
+              }
+            />
           </div>
         )}
       </div>
       <div className="relative flex items-center justify-center p-3 w-fit">
         <button
           type="button"
+          className="flex items-center justify-center w-5 h-5 bg-white rounded-sm"
           onClick={() => setOpenSubToolBar({ type: 'STROKE' })}
         >
-          <IoStopOutline size={20} fill={currentOptions.stroke} />
+          <div
+            className="flex items-center justify-center w-[14.2px] h-[14.2px] rounded-sm"
+            style={{ backgroundColor: currentOptions.stroke }}
+          >
+            <IoStop size={10} className="fill-white" />
+          </div>
         </button>
         {openSubToolBar.type === 'STROKE' && (
           <div className="absolute left-0 flex p-3 bg-gray-600 rounded-lg top-full">
-            STROKE
+            <ChromePicker
+              disableAlpha
+              color={currentOptions.stroke}
+              onChange={(color) =>
+                setCurrentOptions({ ...currentOptions, stroke: color.hex })
+              }
+            />
           </div>
         )}
       </div>

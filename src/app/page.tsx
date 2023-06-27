@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
-import { modeAtom } from '@/recoil/atoms'
+import { currentOptionsAtom, modeAtom } from '@/recoil/atoms'
 import SideToolBar from '@/components/ToolBar/SideToolBar'
 import { Point } from '@/types/type'
 import { v4 as uuid } from 'uuid'
@@ -26,6 +26,8 @@ const defaultPoint = {
 
 export default function Home() {
   const [mode, setMode] = useRecoilState(modeAtom)
+  const [currentOptions, setCurrentOptions] = useRecoilState(currentOptionsAtom)
+
   const [drawings, setDrawings] = useState<any[]>([])
   const isDragged = useRef(false)
   const [point, setPoint] = useState<Point>(defaultPoint)
@@ -69,6 +71,10 @@ export default function Home() {
           center: { x: centerX, y: centerY },
           width,
           height,
+          fill: currentOptions.fill,
+          stroke: currentOptions.stroke,
+          strokeWidth: currentOptions.strokeWidth,
+          opacity: currentOptions.opacity,
         },
       ])
     }
