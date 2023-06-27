@@ -78,7 +78,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex items-center w-full h-full">
+    <main className="w-full h-full">
       <TopToolBar />
       <SideToolBar />
       <div
