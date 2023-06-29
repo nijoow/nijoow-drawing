@@ -7,10 +7,11 @@ const Triangle = ({ drawing }: { drawing: any }) => {
       viewBox={`0 0 ${drawing.width} ${drawing.height}`}
       width={drawing.width}
       height={drawing.height}
+      overflow={'visible'}
+      className={`absolute`}
       style={{
         left: drawing.center.x - drawing.width / 2,
         top: drawing.center.y - drawing.height / 2,
-        position: 'absolute',
       }}
     >
       <polygon
@@ -20,6 +21,7 @@ const Triangle = ({ drawing }: { drawing: any }) => {
         fill={drawing.fill}
         stroke={drawing.stroke}
         strokeWidth={drawing.strokeWidth}
+        opacity={drawing.opacity}
       />
     </svg>
   )
