@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { IoStop, IoStopOutline } from 'react-icons/io5'
+import { IoStop } from 'react-icons/io5'
 import { useRecoilState } from 'recoil'
 import { currentOptionsAtom } from '@/recoil/atoms'
 import { OptionsToolBar } from '@/types/type'
 import { ChromePicker } from 'react-color'
+import Slider from '@/components/Slider/Slider'
 
 export default function TopToolBar() {
   const [currentOptions, setCurrentOptions] = useRecoilState(currentOptionsAtom)
@@ -60,7 +61,7 @@ export default function TopToolBar() {
           </div>
         )}
       </div>
-      <div className="relative flex items-center justify-center p-3 w-fit">
+      <div className="relative flex items-center justify-center p-3 w-32">
         <button
           type="button"
           className="flex items-center space-x-2 min-w-fit"
@@ -70,23 +71,35 @@ export default function TopToolBar() {
           <span className="min-w-fit">{currentOptions.strokeWidth} px</span>
         </button>
         {openSubToolBar.type === 'STORKE_WIDTH' && (
-          <div className="absolute left-0 flex p-3 bg-gray-600 rounded-lg top-full">
-            STORKE WIDTH
+          <div className="absolute left-0 flex p-3 bg-gray-600 rounded-lg top-full py-3">
+            <Slider
+              value={currentOptions.strokeWidth}
+              setValue={(value: number) =>
+                setCurrentOptions({ ...currentOptions, strokeWidth: value })
+              }
+              option={{ min: 0, max: 50, step: 1 }}
+            />
           </div>
         )}
-      </div>{' '}
-      <div className="relative flex items-center justify-center p-3 w-fit">
+      </div>
+      <div className="relative flex items-center justify-center p-3 w-32">
         <button
           type="button"
           className="flex items-center space-x-2 min-w-fit"
           onClick={() => setOpenSubToolBar({ type: 'OPACITY' })}
         >
           <span>Opacity</span>
-          <span className="min-w-fit">{currentOptions.opacity * 100} %</span>
+          <span className="min-w-fit">{currentOptions.opacity} %</span>
         </button>
         {openSubToolBar.type === 'OPACITY' && (
           <div className="absolute left-0 flex p-3 bg-gray-600 rounded-lg top-full">
-            OPACITY
+            <Slider
+              value={currentOptions.opacity}
+              setValue={(value: number) =>
+                setCurrentOptions({ ...currentOptions, opacity: value })
+              }
+              option={{ min: 1, max: 100, step: 1 }}
+            />
           </div>
         )}
       </div>
