@@ -89,14 +89,19 @@ export default function TopToolBar() {
           onClick={() => setOpenSubToolBar({ type: 'OPACITY' })}
         >
           <span>Opacity</span>
-          <span className="min-w-fit">{currentOptions.opacity} %</span>
+          <span className="min-w-fit">
+            {Math.round(currentOptions.opacity * 100)} %
+          </span>
         </button>
         {openSubToolBar.type === 'OPACITY' && (
           <div className="absolute left-0 flex p-3 bg-gray-600 rounded-lg top-full">
             <Slider
-              value={currentOptions.opacity}
+              value={currentOptions.opacity * 100}
               setValue={(value: number) =>
-                setCurrentOptions({ ...currentOptions, opacity: value })
+                setCurrentOptions({
+                  ...currentOptions,
+                  opacity: Math.round(value) / 100,
+                })
               }
               option={{ min: 1, max: 100, step: 1 }}
             />
