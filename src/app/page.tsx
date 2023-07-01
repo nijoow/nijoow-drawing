@@ -2,7 +2,11 @@
 
 import React, { useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
-import { currentOptionsAtom, modeAtom } from '@/recoil/atoms'
+import {
+  currentOptionsAtom,
+  modeAtom,
+  selectedDrawingIdAtom,
+} from '@/recoil/atoms'
 import SideToolBar from '@/components/ToolBar/SideToolBar'
 import { Point } from '@/types/type'
 import { v4 as uuid } from 'uuid'
@@ -27,25 +31,53 @@ const defaultPoint = {
 export default function Home() {
   const [mode, setMode] = useRecoilState(modeAtom)
   const [currentOptions, setCurrentOptions] = useRecoilState(currentOptionsAtom)
-
+  const [selectedDrawingId, setSelectedDrawingId] = useRecoilState(
+    selectedDrawingIdAtom,
+  )
   const [drawings, setDrawings] = useState<any[]>([])
   const isDragged = useRef(false)
   const [point, setPoint] = useState<Point>(defaultPoint)
 
   const handleMouseDown = (event: React.MouseEvent) => {
+    if (event.target instanceof SVGElement) {
+      setSelectedDrawingId(event.target.id)
+    }
     isDragged.current = true
     setPoint({ ...point, startX: event.clientX, startY: event.clientY })
   }
 
   const handleMouseMove = (event: React.MouseEvent) => {
     if (!isDragged.current) return
-    setPoint({
-      ...point,
-      endX: event.clientX,
-      endY: event.clientY,
-    })
+    if (mode.type === 'SHAPE') {
+      setPoint({
+        ...point,
+        endX: event.clientX,
+        endY: event.clientY,
+      })
+    }
+    if (mode.type === 'SELECT' && point.startX && point.startY) {
+      const nextX = event.clientX - point.startX
+      const nextY = event.clientY - point.startY
+      setPoint({
+        ...point,
+        startX: event.clientX,
+        startY: event.clientY,
+      })
+      setDrawings(
+        drawings.map((drawing) =>
+          drawing.id === selectedDrawingId
+            ? {
+                ...drawing,
+                center: {
+                  x: drawing.center.x + nextX,
+                  y: drawing.center.y + nextY,
+                },
+              }
+            : drawing,
+        ),
+      )
+    }
   }
-
   const handleMouseUp = (event: React.MouseEvent) => {
     if (!isDragged.current) return
 
@@ -77,10 +109,10 @@ export default function Home() {
           opacity: currentOptions.opacity,
         },
       ])
+      setMode({ type: null, subType: null })
     }
 
     setPoint(defaultPoint)
-    setMode({ type: null, subType: null })
   }
 
   return (
@@ -93,7 +125,7 @@ export default function Home() {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
       >
-        {drawings.map((drawing: any) => {
+        {drawings.map((drawing: any, index: number) => {
           switch (drawing.subType) {
             case 'RECTANGLE':
               return <Rectangle key={drawing.id} drawing={drawing} />
@@ -106,7 +138,7 @@ export default function Home() {
           }
         })}
       </div>
-      {isDragged.current && (
+      {mode.type === 'SHAPE' && isDragged.current && (
         <div
           className="absolute border border-blue-500"
           style={{
