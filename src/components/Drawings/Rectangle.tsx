@@ -1,8 +1,12 @@
 import React from 'react'
+import { useRecoilState } from 'recoil'
+import { selectedDrawingIdAtom } from '@/recoil/atoms'
 
 const Rectangle = ({ drawing }: { drawing: any }) => {
+  const [, setSelectedDrawingId] = useRecoilState(selectedDrawingIdAtom)
   return (
     <svg
+      id={drawing.id}
       viewBox={`0 0 ${drawing.width} ${drawing.height}`}
       width={drawing.width}
       height={drawing.height}
@@ -12,8 +16,12 @@ const Rectangle = ({ drawing }: { drawing: any }) => {
         left: drawing.center.x - drawing.width / 2,
         top: drawing.center.y - drawing.height / 2,
       }}
+      onMouseDown={(e) => {
+        setSelectedDrawingId(drawing.id)
+      }}
     >
       <rect
+        id={drawing.id}
         x={0}
         y={0}
         width={drawing.width}

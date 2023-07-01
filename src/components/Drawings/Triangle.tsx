@@ -1,6 +1,10 @@
 import React from 'react'
+import { useRecoilState } from 'recoil'
+import { selectedDrawingIdAtom } from '@/recoil/atoms'
 
 const Triangle = ({ drawing }: { drawing: any }) => {
+  const [, setSelectedDrawingId] = useRecoilState(selectedDrawingIdAtom)
+
   return (
     <svg
       key={drawing.id}
@@ -12,6 +16,9 @@ const Triangle = ({ drawing }: { drawing: any }) => {
       style={{
         left: drawing.center.x - drawing.width / 2,
         top: drawing.center.y - drawing.height / 2,
+      }}
+      onMouseDown={(e) => {
+        setSelectedDrawingId(drawing.id)
       }}
     >
       <polygon

@@ -1,6 +1,10 @@
 import React from 'react'
+import { useRecoilState } from 'recoil'
+import { selectedDrawingIdAtom } from '@/recoil/atoms'
 
 const Ellipse = ({ drawing }: { drawing: any }) => {
+  const [, setSelectedDrawingId] = useRecoilState(selectedDrawingIdAtom)
+
   return (
     <svg
       viewBox={`0 0 ${drawing.width} ${drawing.height}`}
@@ -11,6 +15,9 @@ const Ellipse = ({ drawing }: { drawing: any }) => {
       style={{
         left: drawing.center.x - drawing.width / 2,
         top: drawing.center.y - drawing.height / 2,
+      }}
+      onMouseDown={(e) => {
+        setSelectedDrawingId(drawing.id)
       }}
     >
       <ellipse
