@@ -38,6 +38,9 @@ export default function Home() {
   const isDragged = useRef(false)
   const [point, setPoint] = useState<Point>(defaultPoint)
 
+  const selectedDrawing = drawings.find(
+    (drawing) => drawing.id === selectedDrawingId,
+  )
   const handleMouseDown = (event: React.MouseEvent) => {
     if (event.target instanceof SVGElement) {
       setSelectedDrawingId(event.target.id)
@@ -78,6 +81,7 @@ export default function Home() {
       )
     }
   }
+
   const handleMouseUp = (event: React.MouseEvent) => {
     if (!isDragged.current) return
 
@@ -149,6 +153,27 @@ export default function Home() {
             pointerEvents: 'none',
           }}
         ></div>
+      )}
+      {selectedDrawing && (
+        <div
+          className="absolute border-2 border-blue-400"
+          style={{
+            width: selectedDrawing.width,
+            height: selectedDrawing.height,
+            left: selectedDrawing.center.x - selectedDrawing.width / 2,
+            top: selectedDrawing.center.y - selectedDrawing.height / 2,
+            pointerEvents: 'none',
+          }}
+        >
+          <div className="left-0 top-0 -translate-x-1/2 -translate-y-1/2 absolute rounded-full w-4 h-4 bg-white border-2 border-blue-400" />
+          <div className="left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 absolute rounded-full w-4 h-4 bg-white border-2 border-blue-400" />
+          <div className="left-full top-0 -translate-x-1/2 -translate-y-1/2 absolute rounded-full w-4 h-4 bg-white border-2 border-blue-400" />
+          <div className="left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 absolute rounded-full w-4 h-4 bg-white border-2 border-blue-400" />
+          <div className="left-full top-1/2 -translate-x-1/2 -translate-y-1/2 absolute rounded-full w-4 h-4 bg-white border-2 border-blue-400" />
+          <div className="left-0 top-full -translate-x-1/2 -translate-y-1/2 absolute rounded-full w-4 h-4 bg-white border-2 border-blue-400" />
+          <div className="left-1/2 top-full -translate-x-1/2 -translate-y-1/2 absolute rounded-full w-4 h-4 bg-white border-2 border-blue-400" />
+          <div className="left-full top-full -translate-x-1/2 -translate-y-1/2 absolute rounded-full w-4 h-4 bg-white border-2 border-blue-400" />
+        </div>
       )}
     </main>
   )
