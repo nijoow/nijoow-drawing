@@ -1,5 +1,5 @@
 import { Mode, Options } from '@/types/type'
-import { atom } from 'recoil'
+import { atom, selector } from 'recoil'
 
 export const modeAtom = atom<Mode>({
   key: 'Mode',
@@ -17,3 +17,13 @@ export const selectedDrawingIdAtom = atom<string | null>({
 })
 
 export const drawingsAtom = atom<any[]>({ key: 'Drawings', default: [] })
+
+export const selectedDrawingState = selector({
+  key: 'SelectedDrawing',
+  get: ({ get }) => {
+    const drawings = get(drawingsAtom)
+    const selectedDrawingId = get(selectedDrawingIdAtom)
+
+    return drawings.find((drawing) => drawing.id === selectedDrawingId)
+  },
+})

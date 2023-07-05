@@ -1,12 +1,13 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
-import { useRecoilState } from 'recoil'
+import React, { useEffect, useRef, useState } from 'react'
+import { useRecoilState, useRecoilValue } from 'recoil'
 import {
   currentOptionsAtom,
   drawingsAtom,
   modeAtom,
   selectedDrawingIdAtom,
+  selectedDrawingState,
 } from '@/recoil/atoms'
 import SideToolBar from '@/components/ToolBar/SideToolBar'
 import { Point } from '@/types/type'
@@ -41,9 +42,8 @@ export default function Home() {
 
   const [point, setPoint] = useState<Point>(defaultPoint)
 
-  const selectedDrawing = drawings.find(
-    (drawing) => drawing.id === selectedDrawingId,
-  )
+  const selectedDrawing = useRecoilValue(selectedDrawingState)
+
   const handleMouseDown = (event: React.MouseEvent) => {
     if (event.target instanceof SVGElement) {
       setSelectedDrawingId(event.target.id)

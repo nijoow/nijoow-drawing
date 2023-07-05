@@ -4,11 +4,16 @@ import { useState } from 'react'
 import { IoStop } from 'react-icons/io5'
 import { useRecoilState } from 'recoil'
 import { currentOptionsAtom } from '@/recoil/atoms'
+import {
+  currentOptionsAtom,
+  selectedDrawingIdAtom,
+} from '@/recoil/atoms'
 import { OptionsToolBar } from '@/types/type'
 import { ChromePicker } from 'react-color'
 import Slider from '@/components/Slider/Slider'
 
 export default function TopToolBar() {
+  const [selectedDrawingId] = useRecoilState(selectedDrawingIdAtom)
   const [currentOptions, setCurrentOptions] = useRecoilState(currentOptionsAtom)
   const [openSubToolBar, setOpenSubToolBar] = useState<OptionsToolBar>({
     type: null,
@@ -61,7 +66,7 @@ export default function TopToolBar() {
           </div>
         )}
       </div>
-      <div className="relative flex items-center justify-center p-3 w-32">
+      <div className="relative flex items-center justify-center w-32 p-3">
         <button
           type="button"
           className="flex items-center space-x-2 min-w-fit"
@@ -71,7 +76,7 @@ export default function TopToolBar() {
           <span className="min-w-fit">{currentOptions.strokeWidth} px</span>
         </button>
         {openSubToolBar.type === 'STORKE_WIDTH' && (
-          <div className="absolute left-0 flex p-3 bg-gray-600 rounded-lg top-full py-3">
+          <div className="absolute left-0 flex p-3 py-3 bg-gray-600 rounded-lg top-full">
             <Slider
               value={currentOptions.strokeWidth}
               setValue={(value: number) =>
@@ -82,7 +87,7 @@ export default function TopToolBar() {
           </div>
         )}
       </div>
-      <div className="relative flex items-center justify-center p-3 w-32">
+      <div className="relative flex items-center justify-center w-32 p-3">
         <button
           type="button"
           className="flex items-center space-x-2 min-w-fit"

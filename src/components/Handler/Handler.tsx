@@ -1,7 +1,11 @@
-import { drawingsAtom, selectedDrawingIdAtom } from '@/recoil/atoms'
+import {
+  drawingsAtom,
+  selectedDrawingIdAtom,
+  selectedDrawingState,
+} from '@/recoil/atoms'
 import { Point } from '@/types/type'
 import React, { useEffect, useRef, useState } from 'react'
-import { useRecoilState } from 'recoil'
+import { useRecoilState, useRecoilValue } from 'recoil'
 
 type Direction = 'TL' | 'T' | 'TR' | 'L' | 'R' | 'BL' | 'B' | 'BR' | null
 
@@ -18,9 +22,7 @@ const Handler = () => {
   const point = useRef<Point>(defaultPoint)
   const isDragged = useRef(false)
   const transitionType = useRef<'TRANSLATE' | 'RESIZE' | null>(null)
-  const selectedDrawing = drawings.find(
-    (drawing) => drawing.id === selectedDrawingId,
-  )
+  const selectedDrawing = useRecoilValue(selectedDrawingState)
   const handlerRef = useRef<HTMLDivElement>(null)
   const directionRef = useRef<Direction>(null)
 
