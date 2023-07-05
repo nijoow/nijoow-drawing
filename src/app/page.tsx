@@ -45,25 +45,26 @@ export default function Home() {
   const selectedDrawing = useRecoilValue(selectedDrawingState)
 
   const handleMouseDown = (event: React.MouseEvent) => {
+    event.stopPropagation()
     if (event.target instanceof SVGElement) {
       setSelectedDrawingId(event.target.id)
+    } else {
+      setSelectedDrawingId(null)
     }
     isDragged.current = true
     setPoint({ ...point, startX: event.clientX, startY: event.clientY })
   }
 
-  const handleMouseMove = (event: React.MouseEvent) => {
+  const handleMouseMove = (event: React.MouseEvent | MouseEvent) => {
     if (!isDragged.current) return
-    if (mode.type === 'SHAPE') {
-      setPoint({
-        ...point,
-        endX: event.clientX,
-        endY: event.clientY,
-      })
-    }
+    setPoint({
+      ...point,
+      endX: event.clientX,
+      endY: event.clientY,
+    })
   }
 
-  const handleMouseUp = (event: React.MouseEvent) => {
+  const handleMouseUp = (event: React.MouseEvent | MouseEvent) => {
     if (!isDragged.current) return
 
     isDragged.current = false
@@ -109,6 +110,7 @@ export default function Home() {
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
       >
         {drawings.map((drawing: any, index: number) => {
           switch (drawing.subType) {
@@ -123,7 +125,7 @@ export default function Home() {
           }
         })}
       </div>
-      {mode.type === 'SHAPE' && isDragged.current && (
+      {isDragged.current && (
         <div
           className="absolute border border-blue-500"
           style={{
