@@ -2,19 +2,24 @@
 
 import { useState } from 'react'
 import { IoStop } from 'react-icons/io5'
-import { useRecoilState } from 'recoil'
-import { currentOptionsAtom } from '@/recoil/atoms'
+import { useRecoilState, useRecoilValue } from 'recoil'
 import {
-  currentOptionsAtom,
+  basicOptionsAtom,
+  currentOptionsState,
+  drawingsAtom,
   selectedDrawingIdAtom,
+  selectedDrawingState,
 } from '@/recoil/atoms'
 import { OptionsToolBar } from '@/types/type'
 import { ChromePicker } from 'react-color'
 import Slider from '@/components/Slider/Slider'
 
 export default function TopToolBar() {
-  const [selectedDrawingId] = useRecoilState(selectedDrawingIdAtom)
-  const [currentOptions, setCurrentOptions] = useRecoilState(currentOptionsAtom)
+  const selectedDrawing = useRecoilValue(selectedDrawingState)
+  const [drawings, setDrawings] = useRecoilState(drawingsAtom)
+
+  const currentOptions = useRecoilValue(currentOptionsState)
+  const [, setBasicOptions] = useRecoilState(basicOptionsAtom)
   const [openSubToolBar, setOpenSubToolBar] = useState<OptionsToolBar>({
     type: null,
   })
@@ -34,9 +39,20 @@ export default function TopToolBar() {
             <ChromePicker
               disableAlpha
               color={currentOptions.fill}
-              onChange={(color) =>
-                setCurrentOptions({ ...currentOptions, fill: color.hex })
-              }
+              onChange={(color) => {
+                if (selectedDrawing)
+                  setDrawings(
+                    drawings.map((drawing) =>
+                      drawing.id === selectedDrawing.id
+                        ? {
+                            ...drawing,
+                            fill: color.hex,
+                          }
+                        : drawing,
+                    ),
+                  )
+                else setBasicOptions({ ...currentOptions, fill: color.hex })
+              }}
             />
           </div>
         )}
@@ -59,9 +75,20 @@ export default function TopToolBar() {
             <ChromePicker
               disableAlpha
               color={currentOptions.stroke}
-              onChange={(color) =>
-                setCurrentOptions({ ...currentOptions, stroke: color.hex })
-              }
+              onChange={(color) => {
+                if (selectedDrawing)
+                  setDrawings(
+                    drawings.map((drawing) =>
+                      drawing.id === selectedDrawing.id
+                        ? {
+                            ...drawing,
+                            stroke: color.hex,
+                          }
+                        : drawing,
+                    ),
+                  )
+                else setBasicOptions({ ...currentOptions, stroke: color.hex })
+              }}
             />
           </div>
         )}
@@ -79,9 +106,20 @@ export default function TopToolBar() {
           <div className="absolute left-0 flex p-3 py-3 bg-gray-600 rounded-lg top-full">
             <Slider
               value={currentOptions.strokeWidth}
-              setValue={(value: number) =>
-                setCurrentOptions({ ...currentOptions, strokeWidth: value })
-              }
+              setValue={(value: number) => {
+                if (selectedDrawing)
+                  setDrawings(
+                    drawings.map((drawing) =>
+                      drawing.id === selectedDrawing.id
+                        ? {
+                            ...drawing,
+                            strokeWidth: value,
+                          }
+                        : drawing,
+                    ),
+                  )
+                else setBasicOptions({ ...currentOptions, strokeWidth: value })
+              }}
               option={{ min: 0, max: 50, step: 1 }}
             />
           </div>
@@ -102,12 +140,24 @@ export default function TopToolBar() {
           <div className="absolute left-0 flex p-3 bg-gray-600 rounded-lg top-full">
             <Slider
               value={currentOptions.opacity * 100}
-              setValue={(value: number) =>
-                setCurrentOptions({
-                  ...currentOptions,
-                  opacity: Math.round(value) / 100,
-                })
-              }
+              setValue={(value: number) => {
+                if (selectedDrawing)
+                  setDrawings(
+                    drawings.map((drawing) =>
+                      drawing.id === selectedDrawing.id
+                        ? {
+                            ...drawing,
+                            opacity: Math.round(value) / 100,
+                          }
+                        : drawing,
+                    ),
+                  )
+                else
+                  setBasicOptions({
+                    ...currentOptions,
+                    opacity: Math.round(value) / 100,
+                  })
+              }}
               option={{ min: 1, max: 100, step: 1 }}
             />
           </div>

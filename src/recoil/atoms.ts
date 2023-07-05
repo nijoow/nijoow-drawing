@@ -6,9 +6,20 @@ export const modeAtom = atom<Mode>({
   default: { type: 'SELECT', subType: null },
 })
 
-export const currentOptionsAtom = atom<Options>({
+export const currentOptionsState = selector({
   key: 'CurrentOptions',
-  default: { fill: '#000000', stroke: '#000000', strokeWidth: 1, opacity: 1 },
+  get: ({ get }) => {
+    const selectedDrawing = get(selectedDrawingState)
+
+    return selectedDrawing
+      ? {
+          fill: selectedDrawing.fill,
+          stroke: selectedDrawing.stroke,
+          strokeWidth: selectedDrawing.strokeWidth,
+          opacity: selectedDrawing.opacity,
+        }
+      : get(basicOptionsAtom)
+  },
 })
 
 export const basicOptionsAtom = atom<Options>({

@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import {
-  currentOptionsAtom,
+  currentOptionsState,
   drawingsAtom,
   modeAtom,
   selectedDrawingIdAtom,
@@ -33,7 +33,7 @@ const defaultPoint = {
 
 export default function Home() {
   const [mode, setMode] = useRecoilState(modeAtom)
-  const [currentOptions, setCurrentOptions] = useRecoilState(currentOptionsAtom)
+  const currentOptions = useRecoilValue(currentOptionsState)
   const [selectedDrawingId, setSelectedDrawingId] = useRecoilState(
     selectedDrawingIdAtom,
   )
