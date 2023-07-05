@@ -11,8 +11,13 @@ export const currentOptionsAtom = atom<Options>({
   default: { fill: '#000000', stroke: '#000000', strokeWidth: 1, opacity: 1 },
 })
 
+export const basicOptionsAtom = atom<Options>({
+  key: 'BasicOptions',
+  default: { fill: '#000000', stroke: '#000000', strokeWidth: 1, opacity: 1 },
+})
+
 export const selectedDrawingIdAtom = atom<string | null>({
-  key: 'SelectedDrawing',
+  key: 'SelectedDrawingId',
   default: null,
 })
 
