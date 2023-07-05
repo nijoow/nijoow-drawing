@@ -21,6 +21,7 @@ import Rectangle from '@/components/Drawings/Rectangle'
 import Ellipse from '@/components/Drawings/Ellipse'
 import Triangle from '@/components/Drawings/Triangle'
 import TopToolBar from '@/components/ToolBar/TopToolBar'
+import Handler from '@/components/Handler/Handler'
 
 const defaultPoint = {
   startX: undefined,
@@ -134,6 +135,7 @@ export default function Home() {
           }}
         ></div>
       )}
+      {selectedDrawing && <Handler />}
     </main>
   )
 }
