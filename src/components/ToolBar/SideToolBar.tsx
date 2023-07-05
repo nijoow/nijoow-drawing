@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { RiCursorFill, RiPencilFill, RiPenNibFill } from 'react-icons/ri'
 import {
   IoShapes,
@@ -18,9 +18,26 @@ export default function SideToolBar() {
   const [openSubToolBar, setOpenSubToolBar] = useState<SubToolBar>({
     type: null,
   })
+  const toolBarRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleMouseDown = (event: MouseEvent) => {
+      if (
+        toolBarRef.current &&
+        !toolBarRef.current.contains(event.target as Node)
+      ) {
+        setOpenSubToolBar({ type: null })
+      }
+    }
+    window.addEventListener('mousedown', handleMouseDown)
+    return () => window.removeEventListener('mousedown', handleMouseDown)
+  }, [])
 
   return (
-    <div className="fixed z-10 flex flex-col items-center justify-center w-16 gap-2 py-2 overflow-visible text-white -translate-y-1/2 bg-gray-600 rounded-lg left-4 top-1/2 min-h-fit">
+    <div
+      ref={toolBarRef}
+      className="fixed z-10 flex flex-col items-center justify-center w-16 gap-2 py-2 overflow-visible text-white -translate-y-1/2 bg-gray-600 rounded-lg left-4 top-1/2 min-h-fit"
+    >
       <button
         type="button"
         className="p-2 hover:text-gray-400"

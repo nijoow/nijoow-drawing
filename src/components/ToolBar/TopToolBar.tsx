@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { IoStop } from 'react-icons/io5'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import {
@@ -23,9 +23,26 @@ export default function TopToolBar() {
   const [openSubToolBar, setOpenSubToolBar] = useState<OptionsToolBar>({
     type: null,
   })
+  const toolBarRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleMouseDown = (event: MouseEvent) => {
+      if (
+        toolBarRef.current &&
+        !toolBarRef.current.contains(event.target as Node)
+      ) {
+        setOpenSubToolBar({ type: null })
+      }
+    }
+    window.addEventListener('mousedown', handleMouseDown)
+    return () => window.removeEventListener('mousedown', handleMouseDown)
+  }, [])
 
   return (
-    <div className="fixed z-10 flex items-center overflow-visible text-white bg-gray-600 rounded-lg min-w-max left-4 top-4 min-h-fit">
+    <div
+      ref={toolBarRef}
+      className="fixed z-10 flex items-center overflow-visible text-white bg-gray-600 rounded-lg min-w-max left-4 top-4 min-h-fit"
+    >
       <div className="relative flex items-center justify-center p-3 w-fit">
         <button
           type="button"

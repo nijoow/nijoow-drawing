@@ -45,7 +45,6 @@ export default function Home() {
   const selectedDrawing = useRecoilValue(selectedDrawingState)
 
   const handleMouseDown = (event: React.MouseEvent) => {
-    event.stopPropagation()
     if (event.target instanceof SVGElement) {
       setSelectedDrawingId(event.target.id)
     } else {
