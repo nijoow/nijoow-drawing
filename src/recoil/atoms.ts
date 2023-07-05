@@ -15,3 +15,5 @@ export const selectedDrawingIdAtom = atom<string | null>({
   key: 'SelectedDrawing',
   default: null,
 })
+
+export const drawingsAtom = atom<any[]>({ key: 'Drawings', default: [] })

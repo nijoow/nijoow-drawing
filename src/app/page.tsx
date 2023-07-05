@@ -4,6 +4,7 @@ import React, { useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import {
   currentOptionsAtom,
+  drawingsAtom,
   modeAtom,
   selectedDrawingIdAtom,
 } from '@/recoil/atoms'
@@ -34,8 +35,9 @@ export default function Home() {
   const [selectedDrawingId, setSelectedDrawingId] = useRecoilState(
     selectedDrawingIdAtom,
   )
-  const [drawings, setDrawings] = useState<any[]>([])
+  const [drawings, setDrawings] = useRecoilState(drawingsAtom)
   const isDragged = useRef(false)
+
   const [point, setPoint] = useState<Point>(defaultPoint)
 
   const selectedDrawing = drawings.find(
@@ -57,28 +59,6 @@ export default function Home() {
         endX: event.clientX,
         endY: event.clientY,
       })
-    }
-    if (mode.type === 'SELECT' && point.startX && point.startY) {
-      const nextX = event.clientX - point.startX
-      const nextY = event.clientY - point.startY
-      setPoint({
-        ...point,
-        startX: event.clientX,
-        startY: event.clientY,
-      })
-      setDrawings(
-        drawings.map((drawing) =>
-          drawing.id === selectedDrawingId
-            ? {
-                ...drawing,
-                center: {
-                  x: drawing.center.x + nextX,
-                  y: drawing.center.y + nextY,
-                },
-              }
-            : drawing,
-        ),
-      )
     }
   }
 
@@ -153,27 +133,6 @@ export default function Home() {
             pointerEvents: 'none',
           }}
         ></div>
-      )}
-      {selectedDrawing && (
-        <div
-          className="absolute border-2 border-blue-400"
-          style={{
-            width: selectedDrawing.width,
-            height: selectedDrawing.height,
-            left: selectedDrawing.center.x - selectedDrawing.width / 2,
-            top: selectedDrawing.center.y - selectedDrawing.height / 2,
-            pointerEvents: 'none',
-          }}
-        >
-          <div className="left-0 top-0 -translate-x-1/2 -translate-y-1/2 absolute rounded-full w-4 h-4 bg-white border-2 border-blue-400" />
-          <div className="left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 absolute rounded-full w-4 h-4 bg-white border-2 border-blue-400" />
-          <div className="left-full top-0 -translate-x-1/2 -translate-y-1/2 absolute rounded-full w-4 h-4 bg-white border-2 border-blue-400" />
-          <div className="left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 absolute rounded-full w-4 h-4 bg-white border-2 border-blue-400" />
-          <div className="left-full top-1/2 -translate-x-1/2 -translate-y-1/2 absolute rounded-full w-4 h-4 bg-white border-2 border-blue-400" />
-          <div className="left-0 top-full -translate-x-1/2 -translate-y-1/2 absolute rounded-full w-4 h-4 bg-white border-2 border-blue-400" />
-          <div className="left-1/2 top-full -translate-x-1/2 -translate-y-1/2 absolute rounded-full w-4 h-4 bg-white border-2 border-blue-400" />
-          <div className="left-full top-full -translate-x-1/2 -translate-y-1/2 absolute rounded-full w-4 h-4 bg-white border-2 border-blue-400" />
-        </div>
       )}
     </main>
   )
