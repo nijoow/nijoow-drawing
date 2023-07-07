@@ -12,6 +12,7 @@ const Ellipse = ({ drawing }: { drawing: any }) => {
       style={{
         left: drawing.center.x - drawing.width / 2,
         top: drawing.center.y - drawing.height / 2,
+        rotate: drawing.rotate,
       }}
     >
       <ellipse

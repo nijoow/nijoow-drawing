@@ -12,6 +12,7 @@ const Rectangle = ({ drawing }: { drawing: any }) => {
       style={{
         left: drawing.center.x - drawing.width / 2,
         top: drawing.center.y - drawing.height / 2,
+        transform: `rotate(${drawing.rotate})`,
       }}
     >
       <rect
