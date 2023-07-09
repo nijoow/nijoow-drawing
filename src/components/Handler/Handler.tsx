@@ -6,6 +6,7 @@ import {
 import { Point } from '@/types/type'
 import React, { useEffect, useRef, useState } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
+import { IoCloseCircleOutline } from 'react-icons/io5'
 
 type Direction = 'TL' | 'T' | 'TR' | 'L' | 'R' | 'BL' | 'B' | 'BR' | null
 
@@ -19,6 +20,7 @@ const defaultPoint = {
 const Handler = () => {
   const [selectedDrawingId] = useRecoilState(selectedDrawingIdAtom)
   const [drawings, setDrawings] = useRecoilState(drawingsAtom)
+  const [openItemMenu, setOpenItemMenu] = useState(false)
   const point = useRef<Point>(defaultPoint)
   const isDragged = useRef(false)
   const transitionType = useRef<'TRANSLATE' | 'RESIZE' | 'ROTATE' | null>(null)
@@ -175,6 +177,11 @@ const Handler = () => {
     transitionType.current = null
   }
 
+  const handleMouseClickRight = (event: React.MouseEvent | MouseEvent) => {
+    event.preventDefault()
+    setOpenItemMenu(true)
+  }
+
   useEffect(() => {
     window.addEventListener('mousemove', handleMouseMove)
     window.addEventListener('mouseup', handleMouseUp)
@@ -195,6 +202,7 @@ const Handler = () => {
       }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
+      onContextMenu={handleMouseClickRight}
     >
       <div
         className="absolute top-0 left-0 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full cursor-nwse-resize "
@@ -312,6 +320,26 @@ const Handler = () => {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
       />
+      {openItemMenu && (
+        <div className="text-white items-center flex gap-4 absolute top-0 right-0 translate-x-1/2 -translate-y-full p-3 rounded-lg bg-gray-600">
+          <div
+            onClick={() => {
+              setDrawings(
+                drawings.filter((drawing) => drawing.id !== selectedDrawingId),
+              )
+            }}
+          >
+            Delete
+          </div>
+          <div
+            onClick={() => {
+              setOpenItemMenu(false)
+            }}
+          >
+            <IoCloseCircleOutline size={24} />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
