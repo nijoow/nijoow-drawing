@@ -285,7 +285,7 @@ const Handler = () => {
         onMouseUp={handleMouseUp}
       />
       <div
-        className="absolute w-8 h-8 bg-white border-2 border-blue-400 -top-8 -left-8 cursor-rotate"
+        className="absolute w-8 h-8 -top-8 -left-8 cursor-rotate"
         onMouseDown={(e) => {
           transitionType.current = 'ROTATE'
           handleMouseDown(e)
@@ -294,7 +294,7 @@ const Handler = () => {
         onMouseUp={handleMouseUp}
       />
       <div
-        className="absolute w-8 h-8 bg-white border-2 border-blue-400 -top-8 -right-8 cursor-rotate"
+        className="absolute w-8 h-8 -top-8 -right-8 cursor-rotate"
         onMouseDown={(e) => {
           transitionType.current = 'ROTATE'
           handleMouseDown(e)
@@ -303,7 +303,7 @@ const Handler = () => {
         onMouseUp={handleMouseUp}
       />
       <div
-        className="absolute w-8 h-8 bg-white border-2 border-blue-400 -bottom-8 -left-8 cursor-rotate"
+        className="absolute w-8 h-8 -bottom-8 -left-8 cursor-rotate"
         onMouseDown={(e) => {
           transitionType.current = 'ROTATE'
           handleMouseDown(e)
@@ -312,7 +312,7 @@ const Handler = () => {
         onMouseUp={handleMouseUp}
       />
       <div
-        className="absolute w-8 h-8 bg-white border-2 border-blue-400 -bottom-8 -right-8 cursor-rotate"
+        className="absolute w-8 h-8 -bottom-8 -right-8 cursor-rotate"
         onMouseDown={(e) => {
           transitionType.current = 'ROTATE'
           handleMouseDown(e)
