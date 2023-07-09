@@ -20,7 +20,11 @@ const defaultPoint = {
 const Handler = () => {
   const [selectedDrawingId] = useRecoilState(selectedDrawingIdAtom)
   const [drawings, setDrawings] = useRecoilState(drawingsAtom)
-  const [openItemMenu, setOpenItemMenu] = useState(false)
+  const [openItemMenu, setOpenItemMenu] = useState<{
+    open: boolean
+    x: number | null
+    y: number | null
+  }>({ open: true, x: null, y: null })
   const point = useRef<Point>(defaultPoint)
   const isDragged = useRef(false)
   const transitionType = useRef<'TRANSLATE' | 'RESIZE' | 'ROTATE' | null>(null)
@@ -64,6 +68,8 @@ const Handler = () => {
       !point.current.startY
     )
       return
+    closeItemMenu()
+
     const horizontalChange = event.clientX - point.current.startX
     const verticalChange = event.clientY - point.current.startY
     const prevWidth = handlerRef.current.offsetWidth
@@ -177,9 +183,13 @@ const Handler = () => {
     transitionType.current = null
   }
 
+  const closeItemMenu = () => {
+    setOpenItemMenu({ open: false, x: null, y: null })
+  }
+
   const handleMouseClickRight = (event: React.MouseEvent | MouseEvent) => {
     event.preventDefault()
-    setOpenItemMenu(true)
+    setOpenItemMenu({ open: true, x: event.clientX, y: event.clientY })
   }
 
   useEffect(() => {
@@ -193,136 +203,145 @@ const Handler = () => {
   }, [])
 
   return (
-    <div
-      ref={handlerRef}
-      className="absolute border-2 border-blue-400 cursor-move pointer-events-auto"
-      onMouseDown={(e) => {
-        transitionType.current = 'TRANSLATE'
-        handleMouseDown(e)
-      }}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onContextMenu={handleMouseClickRight}
-    >
+    <>
       <div
-        className="absolute top-0 left-0 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full cursor-nwse-resize "
+        ref={handlerRef}
+        className="absolute border-2 border-blue-400 cursor-move pointer-events-auto"
         onMouseDown={(e) => {
-          transitionType.current = 'RESIZE'
-          directionRef.current = 'TL'
+          transitionType.current = 'TRANSLATE'
           handleMouseDown(e)
         }}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-      />
-      <div
-        className="absolute top-0 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full left-1/2 cursor-ns-resize "
-        onMouseDown={(e) => {
-          transitionType.current = 'RESIZE'
-          directionRef.current = 'T'
-          handleMouseDown(e)
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-      />
-      <div
-        className="absolute top-0 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full left-full cursor-nesw-resize "
-        onMouseDown={(e) => {
-          transitionType.current = 'RESIZE'
-          directionRef.current = 'TR'
-          handleMouseDown(e)
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-      />
-      <div
-        className="absolute left-0 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full top-1/2 cursor-ew-resize "
-        onMouseDown={(e) => {
-          transitionType.current = 'RESIZE'
-          directionRef.current = 'L'
-          handleMouseDown(e)
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-      />
-      <div
-        className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full left-full top-1/2 cursor-ew-resize "
-        onMouseDown={(e) => {
-          transitionType.current = 'RESIZE'
-          directionRef.current = 'R'
-          handleMouseDown(e)
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-      />
-      <div
-        className="absolute left-0 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full top-full cursor-nesw-resize "
-        onMouseDown={(e) => {
-          transitionType.current = 'RESIZE'
-          directionRef.current = 'BL'
-          handleMouseDown(e)
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-      />
-      <div
-        className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full left-1/2 top-full cursor-ns-resize "
-        onMouseDown={(e) => {
-          transitionType.current = 'RESIZE'
-          directionRef.current = 'B'
-          handleMouseDown(e)
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-      />
-      <div
-        className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full left-full top-full cursor-nwse-resize "
-        onMouseDown={(e) => {
-          transitionType.current = 'RESIZE'
-          directionRef.current = 'BR'
-          handleMouseDown(e)
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-      />
-      <div
-        className="absolute w-8 h-8 -top-8 -left-8 cursor-rotate"
-        onMouseDown={(e) => {
-          transitionType.current = 'ROTATE'
-          handleMouseDown(e)
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-      />
-      <div
-        className="absolute w-8 h-8 -top-8 -right-8 cursor-rotate"
-        onMouseDown={(e) => {
-          transitionType.current = 'ROTATE'
-          handleMouseDown(e)
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-      />
-      <div
-        className="absolute w-8 h-8 -bottom-8 -left-8 cursor-rotate"
-        onMouseDown={(e) => {
-          transitionType.current = 'ROTATE'
-          handleMouseDown(e)
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-      />
-      <div
-        className="absolute w-8 h-8 -bottom-8 -right-8 cursor-rotate"
-        onMouseDown={(e) => {
-          transitionType.current = 'ROTATE'
-          handleMouseDown(e)
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-      />
-      {openItemMenu && (
-        <div className="text-white items-center flex gap-4 absolute top-0 right-0 translate-x-1/2 -translate-y-full p-3 rounded-lg bg-gray-600">
+        onContextMenu={handleMouseClickRight}
+      >
+        <div
+          className="absolute top-0 left-0 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full cursor-nwse-resize "
+          onMouseDown={(e) => {
+            transitionType.current = 'RESIZE'
+            directionRef.current = 'TL'
+            handleMouseDown(e)
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        />
+        <div
+          className="absolute top-0 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full left-1/2 cursor-ns-resize "
+          onMouseDown={(e) => {
+            transitionType.current = 'RESIZE'
+            directionRef.current = 'T'
+            handleMouseDown(e)
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        />
+        <div
+          className="absolute top-0 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full left-full cursor-nesw-resize "
+          onMouseDown={(e) => {
+            transitionType.current = 'RESIZE'
+            directionRef.current = 'TR'
+            handleMouseDown(e)
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        />
+        <div
+          className="absolute left-0 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full top-1/2 cursor-ew-resize "
+          onMouseDown={(e) => {
+            transitionType.current = 'RESIZE'
+            directionRef.current = 'L'
+            handleMouseDown(e)
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        />
+        <div
+          className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full left-full top-1/2 cursor-ew-resize "
+          onMouseDown={(e) => {
+            transitionType.current = 'RESIZE'
+            directionRef.current = 'R'
+            handleMouseDown(e)
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        />
+        <div
+          className="absolute left-0 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full top-full cursor-nesw-resize "
+          onMouseDown={(e) => {
+            transitionType.current = 'RESIZE'
+            directionRef.current = 'BL'
+            handleMouseDown(e)
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        />
+        <div
+          className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full left-1/2 top-full cursor-ns-resize "
+          onMouseDown={(e) => {
+            transitionType.current = 'RESIZE'
+            directionRef.current = 'B'
+            handleMouseDown(e)
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        />
+        <div
+          className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full left-full top-full cursor-nwse-resize "
+          onMouseDown={(e) => {
+            transitionType.current = 'RESIZE'
+            directionRef.current = 'BR'
+            handleMouseDown(e)
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        />
+        <div
+          className="absolute w-8 h-8 -top-9 -left-9 cursor-rotate"
+          onMouseDown={(e) => {
+            transitionType.current = 'ROTATE'
+            handleMouseDown(e)
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        />
+        <div
+          className="absolute w-8 h-8 -top-9 -right-9 cursor-rotate"
+          onMouseDown={(e) => {
+            transitionType.current = 'ROTATE'
+            handleMouseDown(e)
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        />
+        <div
+          className="absolute w-8 h-8 -bottom-9 -left-9 cursor-rotate"
+          onMouseDown={(e) => {
+            transitionType.current = 'ROTATE'
+            handleMouseDown(e)
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        />
+        <div
+          className="absolute w-8 h-8 -bottom-9 -right-9 cursor-rotate"
+          onMouseDown={(e) => {
+            transitionType.current = 'ROTATE'
+            handleMouseDown(e)
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        />
+      </div>
+      {openItemMenu.open && (
+        <div
+          className="text-white items-center flex gap-4 absolute p-3 rounded-lg bg-gray-600"
+          style={{
+            left: openItemMenu.x ?? undefined,
+            top: openItemMenu.y ?? undefined,
+          }}
+        >
           <div
+            className="cursor-pointer"
             onClick={() => {
               setDrawings(
                 drawings.filter((drawing) => drawing.id !== selectedDrawingId),
@@ -331,16 +350,12 @@ const Handler = () => {
           >
             Delete
           </div>
-          <div
-            onClick={() => {
-              setOpenItemMenu(false)
-            }}
-          >
+          <div className="cursor-pointer" onClick={closeItemMenu}>
             <IoCloseCircleOutline size={24} />
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }
 
