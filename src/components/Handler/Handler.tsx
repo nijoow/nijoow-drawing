@@ -3,12 +3,10 @@ import {
   selectedDrawingIdAtom,
   selectedDrawingState,
 } from '@/recoil/atoms'
-import { Point } from '@/types/type'
+import { Direction, Point, ShapeData } from '@/types/type'
 import React, { useEffect, useRef, useState } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { IoCloseCircleOutline } from 'react-icons/io5'
-
-type Direction = 'TL' | 'T' | 'TR' | 'L' | 'R' | 'BL' | 'B' | 'BR' | null
 
 const defaultPoint = {
   startX: undefined,
@@ -31,7 +29,12 @@ const Handler = () => {
   const selectedDrawing = useRecoilValue(selectedDrawingState)
   const handlerRef = useRef<HTMLDivElement>(null)
   const directionRef = useRef<Direction>(null)
-  const rotateRef = useRef<number | null>(null)
+  const prevRef = useRef<ShapeData>({
+    width: null,
+    height: null,
+    center: { x: null, y: null },
+    rotate: null,
+  })
 
   useEffect(() => {
     if (!handlerRef.current) return
@@ -43,7 +46,7 @@ const Handler = () => {
     handlerRef.current.style.left = `${
       selectedDrawing?.center.x - selectedDrawing?.width / 2
     }px`
-    handlerRef.current.style.rotate = selectedDrawing?.rotate
+    handlerRef.current.style.rotate = `${selectedDrawing?.rotate}deg`
   }, [selectedDrawingId])
 
   const handleMouseDown = (event: React.MouseEvent) => {
@@ -51,12 +54,22 @@ const Handler = () => {
 
     isDragged.current = true
     point.current = {
-      ...point.current,
       startX: event.clientX,
       startY: event.clientY,
+      endX: undefined,
+      endY: undefined,
     }
+
     if (!handlerRef.current) return
-    rotateRef.current = Number(handlerRef.current.style.rotate.slice(0, -3))
+    prevRef.current.width = handlerRef.current.offsetWidth
+    prevRef.current.height = handlerRef.current.offsetHeight
+    prevRef.current.center.x =
+      handlerRef.current.offsetLeft + prevRef.current.width / 2
+    prevRef.current.center.y =
+      handlerRef.current.offsetTop + prevRef.current.height / 2
+    prevRef.current.rotate = Number(
+      handlerRef.current.style.rotate.slice(0, -3),
+    )
   }
 
   const handleMouseMove = (event: React.MouseEvent | MouseEvent) => {
@@ -65,116 +78,193 @@ const Handler = () => {
       !isDragged.current ||
       !handlerRef.current ||
       !point.current.startX ||
-      !point.current.startY
+      !point.current.startY ||
+      !prevRef.current.width ||
+      !prevRef.current.height ||
+      !prevRef.current.center.x ||
+      !prevRef.current.center.y ||
+      !prevRef.current.rotate
     )
       return
     closeItemMenu()
 
-    const horizontalChange = event.clientX - point.current.startX
-    const verticalChange = event.clientY - point.current.startY
-    const prevWidth = handlerRef.current.offsetWidth
-    const prevHeight = handlerRef.current.offsetHeight
-    const prevLeft = handlerRef.current.offsetLeft
-    const prevTop = handlerRef.current.offsetTop
+    const prevLeft = prevRef.current.center.x - prevRef.current.width / 2
+    const prevTop = prevRef.current.center.y - prevRef.current.height / 2
 
     if (transitionType.current === 'TRANSLATE') {
-      handlerRef.current.style.left = prevLeft + horizontalChange + 'px'
-      handlerRef.current.style.top = prevTop + verticalChange + 'px'
-      point.current = {
-        ...point.current,
-        startX: event.clientX,
-        startY: event.clientY,
+      const horizontalChange = event.clientX - point.current.startX
+      const verticalChange = event.clientY - point.current.startY
+      const nextLeft = prevLeft + horizontalChange
+      const nextTop = prevTop + verticalChange
+      const nextCenter = {
+        x: prevRef.current.center.x + horizontalChange,
+        y: prevRef.current.center.y + verticalChange,
       }
+      handlerRef.current.style.left = nextLeft + 'px'
+      handlerRef.current.style.top = nextTop + 'px'
+
+      setDrawings(
+        drawings.map((drawing) =>
+          drawing.id === selectedDrawing.id
+            ? {
+                ...drawing,
+                center: nextCenter,
+              }
+            : drawing,
+        ),
+      )
     } else if (transitionType.current === 'RESIZE') {
+      if (!directionRef.current) return
+      const r = -prevRef.current.rotate * (Math.PI / 180)
+      const rotatedStartX =
+        (point.current.startX - prevRef.current.center.x) * Math.cos(r) -
+        (point.current.startY - prevRef.current.center.y) * Math.sin(r)
+      const rotatedStartY =
+        (point.current.startX - prevRef.current.center.x) * Math.sin(r) +
+        (point.current.startY - prevRef.current.center.y) * Math.cos(r)
+
+      const rotatedEndX =
+        (event.clientX - prevRef.current.center.x) * Math.cos(r) -
+        (event.clientY - prevRef.current.center.y) * Math.sin(r)
+
+      const rotatedEndY =
+        (event.clientX - prevRef.current.center.x) * Math.sin(r) +
+        (event.clientY - prevRef.current.center.y) * Math.cos(r)
+
+      const setResize = (
+        nextWidth: number,
+        nextHeight: number,
+        nextCenterX: number,
+        nextCenterY: number,
+      ) => {
+        if (!handlerRef.current) return
+
+        const width = nextWidth > 0 ? nextWidth : 0
+        const height = nextHeight > 0 ? nextHeight : 0
+        handlerRef.current.style.width = width + 'px'
+        handlerRef.current.style.height = height + 'px'
+        handlerRef.current.style.left = nextCenterX - width / 2 + 'px'
+        handlerRef.current.style.top = nextCenterY - height / 2 + 'px'
+        setDrawings(
+          drawings.map((drawing) =>
+            drawing.id === selectedDrawing.id
+              ? {
+                  ...drawing,
+                  width,
+                  height,
+                  center: { x: nextCenterX, y: nextCenterY },
+                }
+              : drawing,
+          ),
+        )
+      }
+
+      const deltaX = rotatedEndX - rotatedStartX
+      const deltaY = rotatedEndY - rotatedStartY
+      let nextWidth = 0
+      let nextHeight = 0
+      const nextCenterX =
+        handlerRef.current.getBoundingClientRect().left +
+        handlerRef.current.getBoundingClientRect().width / 2
+      const nextCenterY =
+        handlerRef.current.getBoundingClientRect().top +
+        handlerRef.current.getBoundingClientRect().height / 2
       switch (directionRef.current) {
         case 'TL':
-          handlerRef.current.style.left = prevLeft + horizontalChange + 'px'
-          handlerRef.current.style.top = prevTop + verticalChange + 'px'
-          handlerRef.current.style.width = prevWidth - horizontalChange + 'px'
-          handlerRef.current.style.height = prevHeight - verticalChange + 'px'
+          nextWidth = prevRef.current.width - deltaX
+          nextHeight = prevRef.current.height - deltaY
+          setResize(nextWidth, nextHeight, nextCenterX, nextCenterY)
           break
         case 'T':
-          handlerRef.current.style.top = prevTop + verticalChange + 'px'
-          handlerRef.current.style.height = prevHeight - verticalChange + 'px'
+          nextHeight = prevRef.current.height - deltaY
+          setResize(
+            prevRef.current.width,
+            nextHeight,
+            prevRef.current.center.x,
+            nextCenterY,
+          )
           break
         case 'TR':
-          handlerRef.current.style.top = prevTop + verticalChange + 'px'
-          handlerRef.current.style.width = prevWidth + horizontalChange + 'px'
-          handlerRef.current.style.height = prevHeight - verticalChange + 'px'
+          nextWidth = prevRef.current.width + deltaX
+          nextHeight = prevRef.current.height - deltaY
+          setResize(nextWidth, nextHeight, nextCenterX, nextCenterY)
           break
         case 'L':
-          handlerRef.current.style.left = prevLeft + horizontalChange + 'px'
-          handlerRef.current.style.width = prevWidth - horizontalChange + 'px'
+          nextWidth = prevRef.current.width - deltaX
+          setResize(
+            nextWidth,
+            prevRef.current.height,
+            nextCenterX,
+            prevRef.current.center.y,
+          )
           break
         case 'R':
-          handlerRef.current.style.width = prevWidth + horizontalChange + 'px'
+          nextWidth = prevRef.current.width + deltaX
+          setResize(
+            nextWidth,
+            prevRef.current.height,
+            nextCenterX,
+            prevRef.current.center.y,
+          )
           break
         case 'BL':
-          handlerRef.current.style.left = prevLeft + horizontalChange + 'px'
-          handlerRef.current.style.width = prevWidth - horizontalChange + 'px'
-          handlerRef.current.style.height = prevHeight + verticalChange + 'px'
+          nextWidth = prevRef.current.width - deltaX
+          nextHeight = prevRef.current.height + deltaY
+          setResize(nextWidth, nextHeight, nextCenterX, nextCenterY)
           break
         case 'B':
-          handlerRef.current.style.height = prevHeight + verticalChange + 'px'
+          nextHeight = prevRef.current.height + deltaY
+          setResize(
+            prevRef.current.width,
+            nextHeight,
+            prevRef.current.center.x,
+            nextCenterY,
+          )
           break
         case 'BR':
-          handlerRef.current.style.width = prevWidth + horizontalChange + 'px'
-          handlerRef.current.style.height = prevHeight + verticalChange + 'px'
+          nextWidth = prevRef.current.width + deltaX
+          nextHeight = prevRef.current.height + deltaY
+          setResize(nextWidth, nextHeight, nextCenterX, nextCenterY)
           break
         default:
           break
       }
-      point.current = {
-        ...point.current,
-        startX: event.clientX,
-        startY: event.clientY,
-      }
     } else if (
       transitionType.current === 'ROTATE' &&
-      rotateRef.current !== null
+      prevRef.current.rotate !== null
     ) {
       document.body.style.cursor = 'url(/image/cursor/rotate.svg) 12 12, auto'
-      const centerX = prevLeft + prevWidth / 2
-      const centerY = prevTop + prevHeight / 2
       const initialAngle =
         Math.atan2(
-          point.current.startX - centerX,
-          point.current.startY - centerY,
+          point.current.startX - prevRef.current.center.x,
+          point.current.startY - prevRef.current.center.y,
         ) *
         (180 / Math.PI)
       const finalAngle =
-        Math.atan2(event.clientX - centerX, event.clientY - centerY) *
+        Math.atan2(
+          event.clientX - prevRef.current.center.x,
+          event.clientY - prevRef.current.center.y,
+        ) *
         (180 / Math.PI)
 
-      const rotate = initialAngle - finalAngle
+      const rotateAngle = initialAngle - finalAngle
+      const nextRotate = prevRef.current.rotate + rotateAngle
+      handlerRef.current.style.rotate = nextRotate + 'deg'
 
-      handlerRef.current.style.rotate = rotateRef.current + rotate + 'deg'
+      setDrawings(
+        drawings.map((drawing) =>
+          drawing.id === selectedDrawing.id
+            ? {
+                ...drawing,
+                rotate: nextRotate,
+              }
+            : drawing,
+        ),
+      )
     }
-
-    const width = handlerRef.current.offsetWidth
-    const height = handlerRef.current.offsetHeight
-    const center = {
-      x: handlerRef.current.offsetLeft + width / 2,
-      y: handlerRef.current.offsetTop + height / 2,
-    }
-    const rotate = handlerRef.current.style.rotate
-
-    setDrawings(
-      drawings.map((drawing) =>
-        drawing.id === selectedDrawing.id
-          ? {
-              ...drawing,
-              center,
-              width,
-              height,
-              rotate,
-            }
-          : drawing,
-      ),
-    )
   }
 
-  const handleMouseUp = (event: React.MouseEvent | MouseEvent): any => {
+  const handleMouseUp = (event: React.MouseEvent | MouseEvent) => {
     event.stopPropagation()
     document.body.style.cursor = 'auto'
 
@@ -226,7 +316,7 @@ const Handler = () => {
           onMouseUp={handleMouseUp}
         />
         <div
-          className="absolute top-0 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full left-1/2 cursor-ns-resize "
+          className="absolute top-0 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-red-500 border-2 border-blue-400 rounded-full left-1/2 cursor-ns-resize "
           onMouseDown={(e) => {
             transitionType.current = 'RESIZE'
             directionRef.current = 'T'
@@ -334,7 +424,7 @@ const Handler = () => {
       </div>
       {openItemMenu.open && (
         <div
-          className="text-white items-center flex gap-4 absolute p-3 rounded-lg bg-gray-600"
+          className="absolute flex items-center gap-4 p-3 text-white bg-gray-600 rounded-lg"
           style={{
             left: openItemMenu.x ?? undefined,
             top: openItemMenu.y ?? undefined,
