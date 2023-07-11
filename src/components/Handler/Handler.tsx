@@ -79,11 +79,11 @@ const Handler = () => {
       !handlerRef.current ||
       !point.current.startX ||
       !point.current.startY ||
-      !prevRef.current.width ||
-      !prevRef.current.height ||
-      !prevRef.current.center.x ||
-      !prevRef.current.center.y ||
-      !prevRef.current.rotate
+      prevRef.current.width === null ||
+      prevRef.current.height === null ||
+      prevRef.current.center.x === null ||
+      prevRef.current.center.y === null ||
+      prevRef.current.rotate === null
     )
       return
     closeItemMenu()
