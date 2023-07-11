@@ -22,7 +22,7 @@ const Handler = () => {
     open: boolean
     x: number | null
     y: number | null
-  }>({ open: true, x: null, y: null })
+  }>({ open: false, x: null, y: null })
   const point = useRef<Point>(defaultPoint)
   const isDragged = useRef(false)
   const transitionType = useRef<'TRANSLATE' | 'RESIZE' | 'ROTATE' | null>(null)
@@ -436,6 +436,7 @@ const Handler = () => {
               setDrawings(
                 drawings.filter((drawing) => drawing.id !== selectedDrawingId),
               )
+              setOpenItemMenu({ open: false, x: null, y: null })
             }}
           >
             Delete
