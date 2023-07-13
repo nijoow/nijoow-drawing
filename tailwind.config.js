@@ -10,6 +10,9 @@ module.exports = {
       cursor: {
         rotate: 'url(/image/cursor/rotate.svg) 12 12, auto',
       },
+      fontFamily: {
+        montserrat: ['Montserrat', 'sans-serif'],
+      },
     },
   },
   plugins: [],
