@@ -14,7 +14,12 @@ const defaultPoint = {
   endX: undefined,
   endY: undefined,
 }
-
+const defaultPrev = {
+  width: null,
+  height: null,
+  center: { x: null, y: null },
+  rotate: null,
+}
 const Handler = () => {
   const [selectedDrawingId] = useRecoilState(selectedDrawingIdAtom)
   const [drawings, setDrawings] = useRecoilState(drawingsAtom)
@@ -29,12 +34,7 @@ const Handler = () => {
   const selectedDrawing = useRecoilValue(selectedDrawingState)
   const handlerRef = useRef<HTMLDivElement>(null)
   const directionRef = useRef<Direction>(null)
-  const prevRef = useRef<ShapeData>({
-    width: null,
-    height: null,
-    center: { x: null, y: null },
-    rotate: null,
-  })
+  const prevRef = useRef<ShapeData>(defaultPrev)
 
   useEffect(() => {
     if (!handlerRef.current) return
@@ -51,6 +51,7 @@ const Handler = () => {
 
   const handleMouseDown = (event: React.MouseEvent) => {
     event.stopPropagation()
+    prevRef.current = defaultPrev
 
     isDragged.current = true
     point.current = {
