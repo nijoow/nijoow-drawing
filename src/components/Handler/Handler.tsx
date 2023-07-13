@@ -317,7 +317,7 @@ const Handler = () => {
           onMouseUp={handleMouseUp}
         />
         <div
-          className="absolute top-0 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-red-500 border-2 border-blue-400 rounded-full left-1/2 cursor-ns-resize "
+          className="absolute top-0 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full left-1/2 cursor-ns-resize "
           onMouseDown={(e) => {
             transitionType.current = 'RESIZE'
             directionRef.current = 'T'
