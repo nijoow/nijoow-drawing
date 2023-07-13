@@ -1,8 +1,9 @@
-import "./globals.css";
-import { Inter } from "next/font/google";
-import Recoil from "@/contexts/recoil";
+import './globals.css'
+import { Inter } from 'next/font/google'
+import Recoil from '@/contexts/recoil'
+import SplashScreen from '@/components/SplashScreen/SplashScreen'
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
   title: 'Nijoow Drawing',
@@ -12,7 +13,7 @@ export const metadata = {
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <html lang="en">
@@ -23,8 +24,11 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <Recoil>{children}</Recoil>
+        <Recoil>
+          <SplashScreen />
+          {children}
+        </Recoil>
       </body>
     </html>
-  );
+  )
 }
