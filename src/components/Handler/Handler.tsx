@@ -22,7 +22,7 @@ const defaultPrev = {
 }
 const Handler = () => {
   const [selectedDrawingId] = useRecoilState(selectedDrawingIdAtom)
-  const [drawings, setDrawings] = useRecoilState(drawingsAtom)
+  const [, setDrawings] = useRecoilState(drawingsAtom)
   const [openItemMenu, setOpenItemMenu] = useState<{
     open: boolean
     x: number | null
@@ -104,7 +104,7 @@ const Handler = () => {
       handlerRef.current.style.left = nextLeft + 'px'
       handlerRef.current.style.top = nextTop + 'px'
 
-      setDrawings(
+      setDrawings((drawings) =>
         drawings.map((drawing) =>
           drawing.id === selectedDrawing.id
             ? {
@@ -140,13 +140,13 @@ const Handler = () => {
       ) => {
         if (!handlerRef.current) return
 
-        const width = nextWidth > 0 ? nextWidth : 0
-        const height = nextHeight > 0 ? nextHeight : 0
+        const width = nextWidth > 1 ? nextWidth : 1
+        const height = nextHeight > 1 ? nextHeight : 1
         handlerRef.current.style.width = width + 'px'
         handlerRef.current.style.height = height + 'px'
         handlerRef.current.style.left = nextCenterX - width / 2 + 'px'
         handlerRef.current.style.top = nextCenterY - height / 2 + 'px'
-        setDrawings(
+        setDrawings((drawings) =>
           drawings.map((drawing) =>
             drawing.id === selectedDrawing.id
               ? {
@@ -170,6 +170,7 @@ const Handler = () => {
       const nextCenterY =
         handlerRef.current.getBoundingClientRect().top +
         handlerRef.current.getBoundingClientRect().height / 2
+
       switch (directionRef.current) {
         case 'TL':
           nextWidth = prevRef.current.width - deltaX
@@ -252,7 +253,7 @@ const Handler = () => {
       const nextRotate = prevRef.current.rotate + rotateAngle
       handlerRef.current.style.rotate = nextRotate + 'deg'
 
-      setDrawings(
+      setDrawings((drawings) =>
         drawings.map((drawing) =>
           drawing.id === selectedDrawing.id
             ? {
@@ -434,7 +435,7 @@ const Handler = () => {
           <div
             className="cursor-pointer"
             onClick={() => {
-              setDrawings(
+              setDrawings((drawings) =>
                 drawings.filter((drawing) => drawing.id !== selectedDrawingId),
               )
               setOpenItemMenu({ open: false, x: null, y: null })
