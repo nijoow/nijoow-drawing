@@ -140,8 +140,9 @@ const Handler = () => {
       ) => {
         if (!handlerRef.current) return
 
-        const width = nextWidth > 1 ? nextWidth : 1
-        const height = nextHeight > 1 ? nextHeight : 1
+        const width = nextWidth >= 4 ? nextWidth : 4
+        const height = nextHeight >= 4 ? nextHeight : 4
+
         handlerRef.current.style.width = width + 'px'
         handlerRef.current.style.height = height + 'px'
         handlerRef.current.style.left = nextCenterX - width / 2 + 'px'
@@ -159,17 +160,19 @@ const Handler = () => {
           ),
         )
       }
-
       const deltaX = rotatedEndX - rotatedStartX
       const deltaY = rotatedEndY - rotatedStartY
       let nextWidth = 0
       let nextHeight = 0
       const nextCenterX =
-        handlerRef.current.getBoundingClientRect().left +
-        handlerRef.current.getBoundingClientRect().width / 2
+        (handlerRef.current.getBoundingClientRect().left +
+          handlerRef.current.getBoundingClientRect().right) /
+        2
+
       const nextCenterY =
-        handlerRef.current.getBoundingClientRect().top +
-        handlerRef.current.getBoundingClientRect().height / 2
+        (handlerRef.current.getBoundingClientRect().top +
+          handlerRef.current.getBoundingClientRect().bottom) /
+        2
 
       switch (directionRef.current) {
         case 'TL':
