@@ -23,7 +23,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css?family=Montserrat"
         />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} overflow-hidden`}>
         <Recoil>
           <SplashScreen />
           {children}
