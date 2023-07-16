@@ -40,21 +40,29 @@ export default function SideToolBar() {
     >
       <button
         type="button"
-        className="p-2 hover:text-gray-400"
+        className={`py-2 w-full hover:text-[#4ea1d3] flex items-center justify-center ${
+          mode.type === 'SELECT' ? 'text-[#4ea1d3]' : ''
+        }`}
         onClick={() => setMode({ type: 'SELECT', subType: '' })}
       >
         <RiCursorFill size={20} />
       </button>
       <button
         type="button"
-        className="p-2 hover:text-gray-400"
+        className={`py-2 w-full hover:text-[#4ea1d3] flex items-center justify-center ${
+          mode.type === 'PENCIL' ? 'text-[#4ea1d3]' : ''
+        }`}
+        disabled
         onClick={() => setMode({ type: 'PENCIL', subType: '' })}
       >
         <RiPencilFill size={20} />
       </button>
       <button
         type="button"
-        className="p-2 hover:text-gray-400"
+        className={`py-2 w-full hover:text-[#4ea1d3] flex items-center justify-center ${
+          mode.type === 'VERTEX' ? 'text-[#4ea1d3]' : ''
+        }`}
+        disabled
         onClick={() => setMode({ type: 'VERTEX', subType: '' })}
       >
         <RiPenNibFill size={20} />
@@ -62,7 +70,9 @@ export default function SideToolBar() {
       <div className="relative flex items-center justify-center w-full ">
         <button
           type="button"
-          className="p-2 hover:text-gray-400"
+          className={`py-2 w-full hover:text-[#4ea1d3] flex items-center justify-center ${
+            mode.type === 'SHAPE' ? 'text-[#4ea1d3]' : ''
+          }`}
           onClick={() => setOpenSubToolBar({ type: 'SHAPE' })}
         >
           <IoShapes size={20} />
@@ -104,7 +114,10 @@ export default function SideToolBar() {
       </div>
       <button
         type="button"
-        className="p-2 hover:text-gray-400"
+        className={`py-2 w-full hover:text-[#4ea1d3] flex items-center justify-center ${
+          mode.type === 'TEXT' ? 'text-[#4ea1d3]' : ''
+        }`}
+        disabled
         onClick={() => setMode({ type: 'TEXT', subType: '' })}
       >
         <IoText size={20} />
