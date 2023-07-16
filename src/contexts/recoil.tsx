@@ -1,13 +1,13 @@
-"use client";
-import { ReactNode } from "react";
-import { RecoilRoot } from "recoil";
+'use client'
+import { ReactNode } from 'react'
+import { RecoilRoot } from 'recoil'
 
 type Props = {
-  children: ReactNode;
-};
+  children: ReactNode
+}
 
 const Recoil = ({ children }: Props) => {
-  return <RecoilRoot>{children}</RecoilRoot>;
-};
+  return <RecoilRoot>{children}</RecoilRoot>
+}
 
-export default Recoil;
+export default Recoil

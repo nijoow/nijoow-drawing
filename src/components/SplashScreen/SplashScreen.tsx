@@ -13,7 +13,7 @@ const SplashScreen = () => {
     <div className="fixed z-50 w-full h-full bg-black/60 font-montserrat">
       <svg viewBox="0 0 960 300" className="text-6xl">
         <symbol id="s-text">
-          <text text-anchor="middle" x="50%" y="80%">
+          <text textAnchor="middle" x="50%" y="80%">
             Nijoow Drawing
           </text>
         </symbol>
@@ -24,7 +24,6 @@ const SplashScreen = () => {
           <use xlinkHref="#s-text" className="text-copy" />
           <use xlinkHref="#s-text" className="text-copy" />
           <use xlinkHref="#s-text" className="text-copy" />
-
           <use xlinkHref="#s-text" className="text-copy" />
         </g>
       </svg>
