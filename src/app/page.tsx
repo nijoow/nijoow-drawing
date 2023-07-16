@@ -94,7 +94,7 @@ export default function Home() {
           opacity: currentOptions.opacity,
         },
       ])
-      setMode({ type: null, subType: null })
+      setMode({ type: 'SELECT', subType: null })
     }
 
     setPoint(defaultPoint)
