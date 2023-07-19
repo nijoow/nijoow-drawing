@@ -33,4 +33,5 @@ export interface ShapeData {
   height: number | null
   center: { x: number | null; y: number | null }
   rotate: number | null
+  vertexs: { x: number; y: number; id: string }[]
 }
