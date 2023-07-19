@@ -111,6 +111,16 @@ export default function Home() {
       setVertexs([])
     }
   }, [mode])
+  useEffect(() => {
+    const handleContextMenu = (event: MouseEvent) => {
+      event.preventDefault()
+    }
+    window.addEventListener('contextmenu', handleContextMenu)
+    return () => {
+      window.removeEventListener('contextmenu', handleContextMenu)
+    }
+  }, [])
+
   return (
     <main className="w-full h-full">
       <TopToolBar />
