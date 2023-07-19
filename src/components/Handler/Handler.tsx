@@ -19,6 +19,7 @@ const defaultPrev = {
   height: null,
   center: { x: null, y: null },
   rotate: null,
+  vertexs: [],
 }
 const Handler = () => {
   const [selectedDrawingId] = useRecoilState(selectedDrawingIdAtom)
@@ -71,6 +72,7 @@ const Handler = () => {
     prevRef.current.rotate = Number(
       handlerRef.current.style.rotate.slice(0, -3),
     )
+    prevRef.current.vertexs = selectedDrawing.vertexs
   }
 
   const handleMouseMove = (event: React.MouseEvent | MouseEvent) => {
@@ -110,6 +112,14 @@ const Handler = () => {
             ? {
                 ...drawing,
                 center: nextCenter,
+                vertexs:
+                  prevRef.current.vertexs?.map(
+                    (vertex: { x: number; y: number; id: string }) => ({
+                      ...vertex,
+                      x: vertex.x + horizontalChange,
+                      y: vertex.y + verticalChange,
+                    }),
+                  ) || [],
               }
             : drawing,
         ),
