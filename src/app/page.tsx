@@ -23,6 +23,7 @@ import Ellipse from '@/components/Drawings/Ellipse'
 import Triangle from '@/components/Drawings/Triangle'
 import TopToolBar from '@/components/ToolBar/TopToolBar'
 import Handler from '@/components/Handler/Handler'
+import { getInformationFromVertexs } from '@/utils/getInformationFromVertex'
 
 const defaultPoint = {
   startX: undefined,
@@ -41,6 +42,10 @@ export default function Home() {
   const isDragged = useRef(false)
 
   const [point, setPoint] = useState<Point>(defaultPoint)
+
+  const [vertexs, setVertexs] = useState<
+    { x: number; y: number; id: string }[]
+  >([])
 
   const selectedDrawing = useRecoilValue(selectedDrawingState)
 
@@ -100,6 +105,11 @@ export default function Home() {
     setPoint(defaultPoint)
   }
 
+  useEffect(() => {
+    if (mode.type !== 'VERTEX') {
+      setVertexs([])
+    }
+  }, [mode])
   return (
     <main className="w-full h-full">
       <TopToolBar />
@@ -135,6 +145,80 @@ export default function Home() {
             pointerEvents: 'none',
           }}
         ></div>
+      )}
+      {mode.type === 'VERTEX' && (
+        <svg
+          viewBox={`0 0 ${window.innerWidth} ${window.innerHeight}`}
+          width={window.innerWidth}
+          height={window.innerHeight}
+          onMouseDown={(event) => {
+            if (event.buttons === 2) {
+              setMode({ type: 'SELECT', subType: null })
+              return
+            }
+            setVertexs([
+              { x: event.clientX, y: event.clientY, id: uuid() },
+              ...vertexs,
+            ])
+          }}
+          className="absolute top-0 left-0"
+        >
+          {vertexs.length > 1 && (
+            <path
+              d={vertexs
+                .map((vertex, index) => {
+                  if (index === 0) {
+                    return `M${vertex.x} ${vertex.y}`
+                  } else {
+                    return `L${vertex.x} ${vertex.y}`
+                  }
+                })
+                .join(' ')}
+              fill={currentOptions.fill}
+              stroke={currentOptions.stroke}
+              strokeWidth={currentOptions.strokeWidth}
+              opacity={currentOptions.opacity}
+              strokeLinejoin="round"
+            />
+          )}
+          {vertexs.map((vertex, index) => (
+            <circle
+              key={vertex.id}
+              id={vertex.id}
+              cx={vertex.x}
+              cy={vertex.y}
+              r="2"
+              fill={'white'}
+              strokeWidth={4}
+              stroke={index === vertexs.length - 1 ? 'blue' : 'red'}
+              style={{ cursor: 'pointer' }}
+              onMouseDown={(event) => {
+                if (index === vertexs.length - 1) {
+                  const { width, height, center } =
+                    getInformationFromVertexs(vertexs)
+                  setDrawings([
+                    ...drawings,
+                    {
+                      id: uuid(),
+                      type: 'SHAPE',
+                      subType: 'POLYGON',
+                      vertexs: vertexs,
+                      width,
+                      height,
+                      center,
+                      fill: currentOptions.fill,
+                      stroke: currentOptions.stroke,
+                      strokeWidth: currentOptions.strokeWidth,
+                      opacity: currentOptions.opacity,
+                    },
+                  ])
+                  setMode({ type: 'SELECT', subType: null })
+                  setVertexs([])
+                }
+              }}
+            />
+          ))}
+        </svg>
       )}
       {selectedDrawing && <Handler />}
     </main>
