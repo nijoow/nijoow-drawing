@@ -23,6 +23,7 @@ import Ellipse from '@/components/Drawings/Ellipse'
 import Triangle from '@/components/Drawings/Triangle'
 import TopToolBar from '@/components/ToolBar/TopToolBar'
 import Handler from '@/components/Handler/Handler'
+import Polygon from '@/components/Drawings/Polygon'
 import { getInformationFromVertexs } from '@/utils/getInformationFromVertex'
 
 const defaultPoint = {
@@ -129,6 +130,8 @@ export default function Home() {
               return <Triangle key={drawing.id} drawing={drawing} />
             case 'ELLIPSE':
               return <Ellipse key={drawing.id} drawing={drawing} />
+            case 'POLYGON':
+              return <Polygon key={drawing.id} drawing={drawing} />
             default:
               break
           }
