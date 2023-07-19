@@ -62,7 +62,6 @@ export default function SideToolBar() {
         className={`py-2 w-full hover:text-[#4ea1d3] flex items-center justify-center ${
           mode.type === 'VERTEX' ? 'text-[#4ea1d3]' : ''
         }`}
-        disabled
         onClick={() => setMode({ type: 'VERTEX', subType: '' })}
       >
         <RiPenNibFill size={20} />
