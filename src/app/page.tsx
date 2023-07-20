@@ -194,6 +194,22 @@ export default function Home() {
               strokeLinejoin="round"
             />
           )}
+          {vertexs.length > 1 && (
+            <path
+              d={vertexs
+                .map((vertex, index) => {
+                  if (index === 0) {
+                    return `M${vertex.x} ${vertex.y}`
+                  } else {
+                    return `L${vertex.x} ${vertex.y}`
+                  }
+                })
+                .join(' ')}
+              className="stroke-blue-400"
+              strokeWidth={2}
+              strokeLinejoin="round"
+            />
+          )}
           {vertexs.map((vertex, index) => (
             <circle
               key={vertex.id}
