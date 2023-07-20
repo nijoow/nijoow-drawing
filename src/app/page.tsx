@@ -200,10 +200,14 @@ export default function Home() {
               id={vertex.id}
               cx={vertex.x}
               cy={vertex.y}
-              r="2"
+              r="4"
               fill={'white'}
-              strokeWidth={4}
-              stroke={index === vertexs.length - 1 ? 'blue' : 'red'}
+              strokeWidth={2}
+              className={`${
+                index === vertexs.length - 1
+                  ? 'stroke-red-400'
+                  : 'stroke-blue-400'
+              }`}
               style={{ cursor: 'pointer' }}
               onMouseDown={(event) => {
                 if (index === vertexs.length - 1) {
