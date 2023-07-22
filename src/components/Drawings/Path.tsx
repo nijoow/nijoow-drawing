@@ -18,7 +18,7 @@ const Path = ({ drawing }: { drawing: Drawing }) => {
         rotate: `${drawing.rotate}deg`,
       }}
     >
-      <polygon
+      <path
         id={drawing.id}
         d={drawing.vertexs
           .map((vertex, index) => {

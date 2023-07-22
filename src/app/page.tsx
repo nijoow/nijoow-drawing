@@ -25,6 +25,7 @@ import TopToolBar from '@/components/ToolBar/TopToolBar'
 import Handler from '@/components/Handler/Handler'
 import Polygon from '@/components/Drawings/Polygon'
 import { getInformationFromVertexs } from '@/utils/getInformationFromVertex'
+import Path from '@/components/Drawings/Path'
 
 const defaultPoint = {
   startX: undefined,
@@ -111,18 +112,46 @@ export default function Home() {
       setVertexs([])
     }
   }, [mode])
-  useEffect(() => {
-    const handleContextMenu = (event: MouseEvent) => {
-      event.preventDefault()
-    }
-    window.addEventListener('contextmenu', handleContextMenu)
-    return () => {
-      window.removeEventListener('contextmenu', handleContextMenu)
-    }
-  }, [])
+  console.log(mode.type)
 
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    console.log(event.key, mode.type)
+    if (mode.type === 'VERTEX') {
+      if (event.key === 'Escape') {
+        setVertexs([])
+        // setMode({ type: 'SELECT', subType: null })
+      }
+      if (event.key === 'Enter') {
+        console.log('!!')
+        const { width, height, center } = getInformationFromVertexs(vertexs)
+        setDrawings([
+          ...drawings,
+          {
+            id: uuid(),
+            type: 'PATH',
+            subType: 'PATH',
+            vertexs: vertexs,
+            width,
+            height,
+            center,
+            fill: currentOptions.fill,
+            stroke: currentOptions.stroke,
+            strokeWidth: currentOptions.strokeWidth,
+            opacity: currentOptions.opacity,
+          },
+        ])
+        setVertexs([])
+      }
+    }
+  }
+
+  const handleContextMenu = (event: React.MouseEvent) => {
+    event.preventDefault()
+  }
+
+  console.log(drawings)
   return (
-    <main className="w-full h-full">
+    <main className="w-full h-full" onContextMenu={handleContextMenu}>
       <TopToolBar />
       <SideToolBar />
       <div
@@ -142,6 +171,8 @@ export default function Home() {
               return <Ellipse key={drawing.id} drawing={drawing} />
             case 'POLYGON':
               return <Polygon key={drawing.id} drawing={drawing} />
+            case 'PATH':
+              return <Path key={drawing.id} drawing={drawing} />
             default:
               break
           }
@@ -164,6 +195,7 @@ export default function Home() {
           viewBox={`0 0 ${window.innerWidth} ${window.innerHeight}`}
           width={window.innerWidth}
           height={window.innerHeight}
+          tabIndex={0}
           onMouseDown={(event) => {
             if (event.buttons === 2) {
               setMode({ type: 'SELECT', subType: null })
@@ -174,6 +206,7 @@ export default function Home() {
               ...vertexs,
             ])
           }}
+          onKeyDown={handleKeyDown}
           className="absolute top-0 left-0"
         >
           {vertexs.length > 1 && (
