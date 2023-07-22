@@ -17,19 +17,14 @@ const Polygon = ({ drawing }: { drawing: any }) => {
         rotate: `${drawing.rotate}deg`,
       }}
     >
-      <path
+      <polygon
         id={drawing.id}
-        d={drawing.vertexs
+        points={drawing.vertexs
           .map(
-            (vertex: { x: number; y: number; id: string }, index: number) => {
-              if (index === 0) {
-                return `M${vertex.x} ${vertex.y}`
-              } else {
-                return `L${vertex.x} ${vertex.y}`
-              }
-            },
+            (vertex: { x: number; y: number; id: string }) =>
+              `${vertex.x} ${vertex.y}`,
           )
-          .join(' ')}
+          .join(', ')}
         fill={drawing.fill}
         stroke={drawing.stroke}
         strokeWidth={drawing.strokeWidth}
