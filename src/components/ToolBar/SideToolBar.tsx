@@ -43,7 +43,10 @@ export default function SideToolBar() {
         className={`py-2 w-full hover:text-[#4ea1d3] flex items-center justify-center ${
           mode.type === 'SELECT' ? 'text-[#4ea1d3]' : ''
         }`}
-        onClick={() => setMode({ type: 'SELECT', subType: '' })}
+        onClick={() => {
+          setMode({ type: 'SELECT', subType: '' })
+          setOpenSubToolBar({ type: null })
+        }}
       >
         <RiCursorFill size={20} />
       </button>
@@ -53,7 +56,10 @@ export default function SideToolBar() {
           mode.type === 'PENCIL' ? 'text-[#4ea1d3]' : ''
         }`}
         disabled
-        onClick={() => setMode({ type: 'PENCIL', subType: '' })}
+        onClick={() => {
+          setMode({ type: 'PENCIL', subType: '' })
+          setOpenSubToolBar({ type: null })
+        }}
       >
         <RiPencilFill size={20} />
       </button>
@@ -62,7 +68,10 @@ export default function SideToolBar() {
         className={`py-2 w-full hover:text-[#4ea1d3] flex items-center justify-center ${
           mode.type === 'VERTEX' ? 'text-[#4ea1d3]' : ''
         }`}
-        onClick={() => setMode({ type: 'VERTEX', subType: '' })}
+        onClick={() => {
+          setMode({ type: 'VERTEX', subType: '' })
+          setOpenSubToolBar({ type: null })
+        }}
       >
         <RiPenNibFill size={20} />
       </button>
@@ -117,7 +126,10 @@ export default function SideToolBar() {
           mode.type === 'TEXT' ? 'text-[#4ea1d3]' : ''
         }`}
         disabled
-        onClick={() => setMode({ type: 'TEXT', subType: '' })}
+        onClick={() => {
+          setMode({ type: 'TEXT', subType: '' })
+          setOpenSubToolBar({ type: null })
+        }}
       >
         <IoText size={20} />
       </button>
