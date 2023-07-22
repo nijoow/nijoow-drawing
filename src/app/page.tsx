@@ -206,6 +206,7 @@ export default function Home() {
                 })
                 .join(' ')}
               className="stroke-blue-400"
+              fill="none"
               strokeWidth={2}
               strokeLinejoin="round"
             />
@@ -226,6 +227,7 @@ export default function Home() {
               }`}
               style={{ cursor: 'pointer' }}
               onMouseDown={(event) => {
+                event.stopPropagation()
                 if (index === vertexs.length - 1) {
                   const { width, height, center } =
                     getInformationFromVertexs(vertexs)
