@@ -16,14 +16,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="w-full h-full">
       <head>
         <link
           rel="preconnect"
           href="https://fonts.googleapis.com/css?family=Montserrat"
         />
       </head>
-      <body className={`${inter.className} overflow-hidden`}>
+      <body className={`${inter.className} overflow-hidden w-full h-full`}>
         <Recoil>
           <SplashScreen />
           {children}
