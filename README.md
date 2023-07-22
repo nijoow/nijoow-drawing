@@ -5,7 +5,7 @@
 
 [데모페이지]
 
-<a href="nijoow-drawing.vercel.app" target="_blank">nijoow-drawing.vercel.app</a>
+<a href="https://nijoow-drawing.vercel.app/" target="_blank">nijoow-drawing.vercel.app</a>
 
 [기술 스택]
 
