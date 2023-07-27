@@ -7,6 +7,7 @@ import { Direction, Point, ShapeData } from '@/types/type'
 import React, { useEffect, useRef, useState } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { IoCloseCircleOutline } from 'react-icons/io5'
+import { remap } from '@/utils/remap'
 
 const defaultPoint = {
   startX: undefined,
@@ -89,8 +90,8 @@ const Handler = () => {
       prevRef.current.rotate === null
     )
       return
-    closeItemMenu()
 
+    closeItemMenu()
     const prevLeft = prevRef.current.center.x - prevRef.current.width / 2
     const prevTop = prevRef.current.center.y - prevRef.current.height / 2
 
@@ -153,6 +154,27 @@ const Handler = () => {
         const width = nextWidth >= 4 ? nextWidth : 4
         const height = nextHeight >= 4 ? nextHeight : 4
 
+        const nextVertexs = prevRef.current.vertexs.map((vertex) => {
+          if (prevRef.current.width && prevRef.current.height)
+            return {
+              ...vertex,
+              x: remap(
+                vertex.x,
+                prevLeft,
+                prevLeft + prevRef.current.width,
+                nextCenterX - nextWidth / 2,
+                nextCenterX + nextWidth / 2,
+              ),
+              y: remap(
+                vertex.y,
+                prevTop,
+                prevTop + prevRef.current.height,
+                nextCenterY - nextHeight / 2,
+                nextCenterY + nextHeight / 2,
+              ),
+            }
+        })
+
         handlerRef.current.style.width = width + 'px'
         handlerRef.current.style.height = height + 'px'
         handlerRef.current.style.left = nextCenterX - width / 2 + 'px'
@@ -165,6 +187,7 @@ const Handler = () => {
                   width,
                   height,
                   center: { x: nextCenterX, y: nextCenterY },
+                  vertexs: nextVertexs,
                 }
               : drawing,
           ),
