@@ -15,6 +15,7 @@ const defaultPoint = {
   endX: undefined,
   endY: undefined,
 }
+
 const defaultPrev = {
   width: null,
   height: null,
@@ -22,22 +23,29 @@ const defaultPrev = {
   rotate: null,
   vertexs: [],
 }
+
 const Handler = () => {
+  // recoil
   const [selectedDrawingId] = useRecoilState(selectedDrawingIdAtom)
   const [, setDrawings] = useRecoilState(drawingsAtom)
+  const selectedDrawing = useRecoilValue(selectedDrawingState)
+
+  // useState
   const [openItemMenu, setOpenItemMenu] = useState<{
     open: boolean
     x: number | null
     y: number | null
   }>({ open: false, x: null, y: null })
+
+  // uesRef
   const point = useRef<Point>(defaultPoint)
   const isDragged = useRef(false)
   const transitionType = useRef<'TRANSLATE' | 'RESIZE' | 'ROTATE' | null>(null)
-  const selectedDrawing = useRecoilValue(selectedDrawingState)
   const handlerRef = useRef<HTMLDivElement>(null)
   const directionRef = useRef<Direction>(null)
   const prevRef = useRef<ShapeData>(defaultPrev)
 
+  //useEffect
   useEffect(() => {
     if (!handlerRef.current) return
     handlerRef.current.style.width = `${selectedDrawing?.width}px`
@@ -51,6 +59,7 @@ const Handler = () => {
     handlerRef.current.style.rotate = `${selectedDrawing?.rotate}deg`
   }, [selectedDrawingId])
 
+  // function
   const handleMouseDown = (event: React.MouseEvent) => {
     event.stopPropagation()
     prevRef.current = defaultPrev
@@ -151,41 +160,39 @@ const Handler = () => {
       ) => {
         if (!handlerRef.current) return
 
-        const width = nextWidth >= 4 ? nextWidth : 4
-        const height = nextHeight >= 4 ? nextHeight : 4
+        const nextVertexs = prevRef.current.vertexs?.map((vertex) =>
+          prevRef.current.width && prevRef.current.height
+            ? {
+                ...vertex,
+                x: remap(
+                  vertex.x,
+                  prevLeft,
+                  prevLeft + prevRef.current.width,
+                  nextCenterX - nextWidth / 2,
+                  nextCenterX + nextWidth / 2,
+                ),
+                y: remap(
+                  vertex.y,
+                  prevTop,
+                  prevTop + prevRef.current.height,
+                  nextCenterY - nextHeight / 2,
+                  nextCenterY + nextHeight / 2,
+                ),
+              }
+            : vertex,
+        )
 
-        const nextVertexs = prevRef.current.vertexs.map((vertex) => {
-          if (prevRef.current.width && prevRef.current.height)
-            return {
-              ...vertex,
-              x: remap(
-                vertex.x,
-                prevLeft,
-                prevLeft + prevRef.current.width,
-                nextCenterX - nextWidth / 2,
-                nextCenterX + nextWidth / 2,
-              ),
-              y: remap(
-                vertex.y,
-                prevTop,
-                prevTop + prevRef.current.height,
-                nextCenterY - nextHeight / 2,
-                nextCenterY + nextHeight / 2,
-              ),
-            }
-        })
-
-        handlerRef.current.style.width = width + 'px'
-        handlerRef.current.style.height = height + 'px'
-        handlerRef.current.style.left = nextCenterX - width / 2 + 'px'
-        handlerRef.current.style.top = nextCenterY - height / 2 + 'px'
+        handlerRef.current.style.width = nextWidth + 'px'
+        handlerRef.current.style.height = nextHeight + 'px'
+        handlerRef.current.style.left = nextCenterX - nextWidth / 2 + 'px'
+        handlerRef.current.style.top = nextCenterY - nextHeight / 2 + 'px'
         setDrawings((drawings) =>
           drawings.map((drawing) =>
             drawing.id === selectedDrawing.id
               ? {
                   ...drawing,
-                  width,
-                  height,
+                  width: nextWidth,
+                  height: nextHeight,
                   center: { x: nextCenterX, y: nextCenterY },
                   vertexs: nextVertexs,
                 }
@@ -209,12 +216,12 @@ const Handler = () => {
 
       switch (directionRef.current) {
         case 'TL':
-          nextWidth = prevRef.current.width - deltaX
-          nextHeight = prevRef.current.height - deltaY
+          nextWidth = Math.abs(prevRef.current.width - deltaX)
+          nextHeight = Math.abs(prevRef.current.height - deltaY)
           setResize(nextWidth, nextHeight, nextCenterX, nextCenterY)
           break
         case 'T':
-          nextHeight = prevRef.current.height - deltaY
+          nextHeight = Math.abs(prevRef.current.height - deltaY)
           setResize(
             prevRef.current.width,
             nextHeight,
@@ -223,12 +230,12 @@ const Handler = () => {
           )
           break
         case 'TR':
-          nextWidth = prevRef.current.width + deltaX
-          nextHeight = prevRef.current.height - deltaY
+          nextWidth = Math.abs(prevRef.current.width + deltaX)
+          nextHeight = Math.abs(prevRef.current.height - deltaY)
           setResize(nextWidth, nextHeight, nextCenterX, nextCenterY)
           break
         case 'L':
-          nextWidth = prevRef.current.width - deltaX
+          nextWidth = Math.abs(prevRef.current.width - deltaX)
           setResize(
             nextWidth,
             prevRef.current.height,
@@ -237,7 +244,7 @@ const Handler = () => {
           )
           break
         case 'R':
-          nextWidth = prevRef.current.width + deltaX
+          nextWidth = Math.abs(prevRef.current.width + deltaX)
           setResize(
             nextWidth,
             prevRef.current.height,
@@ -246,12 +253,12 @@ const Handler = () => {
           )
           break
         case 'BL':
-          nextWidth = prevRef.current.width - deltaX
-          nextHeight = prevRef.current.height + deltaY
+          nextWidth = Math.abs(prevRef.current.width - deltaX)
+          nextHeight = Math.abs(prevRef.current.height + deltaY)
           setResize(nextWidth, nextHeight, nextCenterX, nextCenterY)
           break
         case 'B':
-          nextHeight = prevRef.current.height + deltaY
+          nextHeight = Math.abs(prevRef.current.height + deltaY)
           setResize(
             prevRef.current.width,
             nextHeight,
@@ -260,8 +267,8 @@ const Handler = () => {
           )
           break
         case 'BR':
-          nextWidth = prevRef.current.width + deltaX
-          nextHeight = prevRef.current.height + deltaY
+          nextWidth = Math.abs(prevRef.current.width + deltaX)
+          nextHeight = Math.abs(prevRef.current.height + deltaY)
           setResize(nextWidth, nextHeight, nextCenterX, nextCenterY)
           break
         default:
