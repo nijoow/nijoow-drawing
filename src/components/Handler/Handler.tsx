@@ -170,8 +170,8 @@ const Handler = () => {
           ),
         )
       }
-      const deltaX = rotatedEndX - rotatedStartX
-      const deltaY = rotatedEndY - rotatedStartY
+      const deltaX = (rotatedEndX - rotatedStartX) * 2
+      const deltaY = (rotatedEndY - rotatedStartY) * 2
       let nextWidth = 0
       let nextHeight = 0
       const nextCenterX =
