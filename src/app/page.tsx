@@ -112,17 +112,14 @@ export default function Home() {
       setVertexs([])
     }
   }, [mode])
-  console.log(mode.type)
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    console.log(event.key, mode.type)
     if (mode.type === 'VERTEX') {
       if (event.key === 'Escape') {
         setVertexs([])
         // setMode({ type: 'SELECT', subType: null })
       }
       if (event.key === 'Enter') {
-        console.log('!!')
         const { width, height, center } = getInformationFromVertexs(vertexs)
         setDrawings([
           ...drawings,
@@ -149,7 +146,6 @@ export default function Home() {
     event.preventDefault()
   }
 
-  console.log(drawings)
   return (
     <main className="w-full h-full" onContextMenu={handleContextMenu}>
       <TopToolBar />
