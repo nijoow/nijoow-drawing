@@ -50,7 +50,7 @@ export default function Home() {
   >([])
 
   const selectedDrawing = useRecoilValue(selectedDrawingState)
-
+  console.log(selectedDrawing?.vertexs)
   const handleMouseDown = (event: React.MouseEvent) => {
     if (!selectedDrawingId && event.target instanceof SVGElement) {
       setSelectedDrawingId(event.target.id)
@@ -90,11 +90,13 @@ export default function Home() {
         ...drawings,
         {
           id: uuid(),
-          type: mode.type,
-          subType: mode.subType,
+          type: 'POLYGON',
+          subType: null,
           center: { x: centerX, y: centerY },
           width,
           height,
+          rotate: 0,
+          vertexs: [],
           fill: currentOptions.fill,
           stroke: currentOptions.stroke,
           strokeWidth: currentOptions.strokeWidth,
@@ -126,11 +128,12 @@ export default function Home() {
           {
             id: uuid(),
             type: 'PATH',
-            subType: 'PATH',
+            subType: null,
             vertexs: vertexs,
             width,
             height,
             center,
+            rotate: 0,
             fill: currentOptions.fill,
             stroke: currentOptions.stroke,
             strokeWidth: currentOptions.strokeWidth,
@@ -158,13 +161,7 @@ export default function Home() {
         onMouseLeave={handleMouseUp}
       >
         {drawings.map((drawing: any, index: number) => {
-          switch (drawing.subType) {
-            case 'RECTANGLE':
-              return <Rectangle key={drawing.id} drawing={drawing} />
-            case 'TRIANGLE':
-              return <Triangle key={drawing.id} drawing={drawing} />
-            case 'ELLIPSE':
-              return <Ellipse key={drawing.id} drawing={drawing} />
+          switch (drawing.type) {
             case 'POLYGON':
               return <Polygon key={drawing.id} drawing={drawing} />
             case 'PATH':
@@ -264,12 +261,13 @@ export default function Home() {
                     ...drawings,
                     {
                       id: uuid(),
-                      type: 'SHAPE',
-                      subType: 'POLYGON',
+                      type: 'POLYGON',
+                      subType: null,
                       vertexs: vertexs,
                       width,
                       height,
                       center,
+                      rotate: 0,
                       fill: currentOptions.fill,
                       stroke: currentOptions.stroke,
                       strokeWidth: currentOptions.strokeWidth,
@@ -284,7 +282,7 @@ export default function Home() {
           ))}
         </svg>
       )}
-      {selectedDrawing && <Handler />}
+      {selectedDrawing && mode.subType === 'SHAPE' && <Handler />}
     </main>
   )
 }

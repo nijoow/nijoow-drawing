@@ -8,6 +8,7 @@ import {
   IoSquare,
   IoTriangle,
   IoEllipse,
+  IoNavigate,
 } from 'react-icons/io5'
 import { useRecoilState } from 'recoil'
 import { modeAtom } from '@/recoil/atoms'
@@ -41,10 +42,12 @@ export default function SideToolBar() {
       <button
         type="button"
         className={`py-2 w-full hover:text-[#4ea1d3] flex items-center justify-center ${
-          mode.type === 'SELECT' ? 'text-[#4ea1d3]' : ''
+          mode.type === 'SELECT' && mode.subType === 'SHAPE'
+            ? 'text-[#4ea1d3]'
+            : ''
         }`}
         onClick={() => {
-          setMode({ type: 'SELECT', subType: '' })
+          setMode({ type: 'SELECT', subType: 'SHAPE' })
           setOpenSubToolBar({ type: null })
         }}
       >
@@ -53,11 +56,25 @@ export default function SideToolBar() {
       <button
         type="button"
         className={`py-2 w-full hover:text-[#4ea1d3] flex items-center justify-center ${
+          mode.type === 'SELECT' && mode.subType === 'VERTEX'
+            ? 'text-[#4ea1d3]'
+            : ''
+        }`}
+        onClick={() => {
+          setMode({ type: 'SELECT', subType: 'VERTEX' })
+          setOpenSubToolBar({ type: null })
+        }}
+      >
+        <IoNavigate size={20} />
+      </button>
+      <button
+        type="button"
+        className={`py-2 w-full hover:text-[#4ea1d3] flex items-center justify-center ${
           mode.type === 'PENCIL' ? 'text-[#4ea1d3]' : ''
         }`}
         disabled
         onClick={() => {
-          setMode({ type: 'PENCIL', subType: '' })
+          setMode({ type: 'PENCIL', subType: null })
           setOpenSubToolBar({ type: null })
         }}
       >
@@ -69,7 +86,7 @@ export default function SideToolBar() {
           mode.type === 'VERTEX' ? 'text-[#4ea1d3]' : ''
         }`}
         onClick={() => {
-          setMode({ type: 'VERTEX', subType: '' })
+          setMode({ type: 'VERTEX', subType: null })
           setOpenSubToolBar({ type: null })
         }}
       >
@@ -127,7 +144,7 @@ export default function SideToolBar() {
         }`}
         disabled
         onClick={() => {
-          setMode({ type: 'TEXT', subType: '' })
+          setMode({ type: 'TEXT', subType: null })
           setOpenSubToolBar({ type: null })
         }}
       >
