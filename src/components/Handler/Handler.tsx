@@ -25,10 +25,10 @@ const defaultPrev = {
 }
 
 const rotateHandler = [
-  { position: '-top-9 -left-9' },
-  { position: '-top-9 -right-9' },
-  { position: '-bottom-9 -left-9 ' },
-  { position: '-bottom-9 -right-9' },
+  { key: 'TL', position: '-top-9 -left-9' },
+  { key: 'TR', position: '-top-9 -right-9' },
+  { key: 'BL', position: '-bottom-9 -left-9 ' },
+  { key: 'BR', position: '-bottom-9 -right-9' },
 ]
 
 const resizeHandler = [
@@ -402,6 +402,7 @@ const Handler = () => {
       >
         {resizeHandler.map(({ position, direction }) => (
           <div
+            key={direction}
             className={`${position} absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full cursor-nwse-resize`}
             onMouseDown={(e) => {
               transitionType.current = 'RESIZE'
@@ -412,8 +413,9 @@ const Handler = () => {
             onMouseUp={handleMouseUp}
           />
         ))}
-        {rotateHandler.map(({ position }) => (
+        {rotateHandler.map(({ position, key }) => (
           <div
+            key={key}
             className={`absolute w-8 h-8 cursor-rotate ${position}`}
             onMouseDown={(e) => {
               transitionType.current = 'ROTATE'
