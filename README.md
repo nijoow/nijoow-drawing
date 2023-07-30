@@ -29,7 +29,7 @@
 - ~~도형 여러개 있을 때 다른 도형에 변형 생기는 문제~~
 - ~~리사이즈시 크기가 0보다 작아지면 위치 바뀌는 문제~~
 - ~~vertex로 이루어진 도형 resize 로직~~
-- 기존 사각형, 삼각형 도형도 vertex polygon으로 변경
-- vertex 회전로직 수정
-- path/polygon 분리
+- ~~기존 사각형, 삼각형 도형도 vertex polygon으로 변경~~
+- ~~vertex 회전로직 수정~~
 - fill, stroke 빈값 추가
+- 모든 도형 path로 통일시키고 vertex 저장 방식 수정
