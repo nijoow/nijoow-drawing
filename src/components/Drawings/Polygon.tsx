@@ -14,7 +14,6 @@ const Polygon = ({ drawing }: { drawing: any }) => {
       style={{
         left,
         top,
-        rotate: `${drawing.rotate}deg`,
       }}
     >
       <polygon
