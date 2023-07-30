@@ -80,6 +80,16 @@ const Handler = () => {
     handlerRef.current.style.rotate = `${selectedDrawing.rotate}deg`
   }, [selectedDrawingId])
 
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [])
+
   // function
   const handleMouseDown = (event: React.MouseEvent) => {
     event.stopPropagation()
@@ -364,16 +374,6 @@ const Handler = () => {
     )
     setOpenItemMenu({ open: false, x: null, y: null })
   }
-
-  useEffect(() => {
-    window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('mouseup', handleMouseUp)
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
-    }
-  }, [])
 
   return (
     <>
