@@ -33,3 +33,4 @@
 - ~~vertex 회전로직 수정~~
 - fill, stroke 빈값 추가
 - 모든 도형 path로 통일시키고 vertex 저장 방식 수정
+- vertex 핸들러 변경사항 바로 적용안되는 문제
