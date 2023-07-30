@@ -1,10 +1,14 @@
-type ModeType = 'SELECT' | 'PENCIL' | 'VERTEX' | 'SHAPE' | 'TEXT' | null
+type ModeType = 'SELECT' | 'PENCIL' | 'VERTEX' | 'SHAPE' | 'TEXT'
+type ModeSubType = 'SHAPE' | 'VERTEX' | 'RECTANGLE' | 'ELLIPSE' | 'TRIANGLE'
 type Option = 'FILL' | 'STROKE' | 'STORKE_WIDTH' | 'OPACITY' | null
+export type DrawingType = 'POLYGON' | 'PATH' | 'ELLIPSE' | 'TEXT'
+type DrawingSubType = 'POLYGON' | 'RECT' | 'CIRCLE' | 'TEXT' | 'LINE' | 'PATH'
+
 export type Direction = 'TL' | 'T' | 'TR' | 'L' | 'R' | 'BL' | 'B' | 'BR' | null
 
 export interface Mode {
-  type: ModeType
-  subType: string | null
+  type: ModeType | null
+  subType: ModeSubType | null
 }
 
 export interface Options {
@@ -15,7 +19,7 @@ export interface Options {
 }
 
 export interface SubToolBar {
-  type: ModeType
+  type: ModeType | null
 }
 
 export interface OptionsToolBar {
@@ -34,7 +38,7 @@ interface Center {
   y: number
 }
 
-interface Vertex {
+export interface Vertex {
   x: number
   y: number
   id: string
@@ -50,8 +54,8 @@ export interface ShapeData {
 
 export interface Drawing {
   id: string
-  type: 'SHAPE' | 'PATH' | 'TEXT'
-  subType: 'POLYGON' | 'RECT' | 'CIRCLE' | 'TEXT' | 'LINE' | 'PATH'
+  type: DrawingType
+  subType: null
   vertexs: Vertex[]
   width: number
   height: number

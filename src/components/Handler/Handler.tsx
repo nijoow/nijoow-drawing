@@ -8,6 +8,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { IoCloseCircleOutline } from 'react-icons/io5'
 import { remap } from '@/utils/remap'
+import { rotateVertex } from '@/utils/rotateVertex'
 
 const defaultPoint = {
   startX: undefined,
@@ -25,10 +26,10 @@ const defaultPrev = {
 }
 
 const rotateHandler = [
-  { position: '-top-9 -left-9' },
-  { position: '-top-9 -right-9' },
-  { position: '-bottom-9 -left-9 ' },
-  { position: '-bottom-9 -right-9' },
+  { key: 'TL', position: '-top-9 -left-9' },
+  { key: 'TR', position: '-top-9 -right-9' },
+  { key: 'BL', position: '-bottom-9 -left-9 ' },
+  { key: 'BR', position: '-bottom-9 -right-9' },
 ]
 
 const resizeHandler = [
@@ -48,6 +49,8 @@ const Handler = () => {
   const [, setDrawings] = useRecoilState(drawingsAtom)
   const selectedDrawing = useRecoilValue(selectedDrawingState)
 
+  if (!selectedDrawing) return null
+
   // useState
   const [openItemMenu, setOpenItemMenu] = useState<{
     open: boolean
@@ -66,16 +69,26 @@ const Handler = () => {
   //useEffect
   useEffect(() => {
     if (!handlerRef.current) return
-    handlerRef.current.style.width = `${selectedDrawing?.width}px`
-    handlerRef.current.style.height = `${selectedDrawing?.height}px`
+    handlerRef.current.style.width = `${selectedDrawing.width}px`
+    handlerRef.current.style.height = `${selectedDrawing.height}px`
     handlerRef.current.style.top = `${
-      selectedDrawing?.center.y - selectedDrawing?.height / 2
+      selectedDrawing.center.y - selectedDrawing.height / 2
     }px`
     handlerRef.current.style.left = `${
-      selectedDrawing?.center.x - selectedDrawing?.width / 2
+      selectedDrawing.center.x - selectedDrawing.width / 2
     }px`
-    handlerRef.current.style.rotate = `${selectedDrawing?.rotate}deg`
+    handlerRef.current.style.rotate = `${selectedDrawing.rotate}deg`
   }, [selectedDrawingId])
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [])
 
   // function
   const handleMouseDown = (event: React.MouseEvent) => {
@@ -97,9 +110,7 @@ const Handler = () => {
       handlerRef.current.offsetLeft + prevRef.current.width / 2
     prevRef.current.center.y =
       handlerRef.current.offsetTop + prevRef.current.height / 2
-    prevRef.current.rotate = Number(
-      handlerRef.current.style.rotate.slice(0, -3),
-    )
+    prevRef.current.rotate = selectedDrawing.rotate
     prevRef.current.vertexs = selectedDrawing.vertexs
   }
 
@@ -154,56 +165,89 @@ const Handler = () => {
       )
     } else if (transitionType.current === 'RESIZE') {
       if (!directionRef.current) return
-      const r = -prevRef.current.rotate * (Math.PI / 180)
-      const rotatedStartX =
-        (point.current.startX - prevRef.current.center.x) * Math.cos(r) -
-        (point.current.startY - prevRef.current.center.y) * Math.sin(r)
-      const rotatedStartY =
-        (point.current.startX - prevRef.current.center.x) * Math.sin(r) +
-        (point.current.startY - prevRef.current.center.y) * Math.cos(r)
 
-      const rotatedEndX =
-        (event.clientX - prevRef.current.center.x) * Math.cos(r) -
-        (event.clientY - prevRef.current.center.y) * Math.sin(r)
+      const rotatedStartPoint = rotateVertex(
+        point.current.startX,
+        point.current.startY,
+        prevRef.current.center.x,
+        prevRef.current.center.y,
+        -prevRef.current.rotate,
+      )
+      const rotatedEndPoint = rotateVertex(
+        event.clientX,
+        event.clientY,
+        prevRef.current.center.x,
+        prevRef.current.center.y,
+        -prevRef.current.rotate,
+      )
 
-      const rotatedEndY =
-        (event.clientX - prevRef.current.center.x) * Math.sin(r) +
-        (event.clientY - prevRef.current.center.y) * Math.cos(r)
-
-      const setResize = (
-        nextWidth: number,
-        nextHeight: number,
-        nextCenterX: number,
-        nextCenterY: number,
-      ) => {
-        if (!handlerRef.current) return
-
-        const nextVertexs = prevRef.current.vertexs?.map((vertex) =>
-          prevRef.current.width && prevRef.current.height
-            ? {
-                ...vertex,
-                x: remap(
-                  vertex.x,
-                  prevLeft,
-                  prevLeft + prevRef.current.width,
-                  nextCenterX - nextWidth / 2,
-                  nextCenterX + nextWidth / 2,
-                ),
-                y: remap(
-                  vertex.y,
-                  prevTop,
-                  prevTop + prevRef.current.height,
-                  nextCenterY - nextHeight / 2,
-                  nextCenterY + nextHeight / 2,
-                ),
-              }
-            : vertex,
+      const resize = (deltaX: number, deltaY: number) => {
+        if (
+          handlerRef.current === null ||
+          prevRef.current.width === null ||
+          prevRef.current.height === null
         )
+          return
+        const nextCenterX =
+          (handlerRef.current.getBoundingClientRect().left +
+            handlerRef.current.getBoundingClientRect().right) /
+          2
+
+        const nextCenterY =
+          (handlerRef.current.getBoundingClientRect().top +
+            handlerRef.current.getBoundingClientRect().bottom) /
+          2
+
+        const width = prevRef.current.width + deltaX
+        const height = prevRef.current.height + deltaY
+
+        const nextWidth = Math.abs(width)
+        const nextHeight = Math.abs(height)
+
+        const nextVertexs = prevRef.current.vertexs?.map((vertex) => {
+          if (
+            prevRef.current.width &&
+            prevRef.current.height &&
+            prevRef.current.center.x &&
+            prevRef.current.center.y &&
+            prevRef.current.rotate !== null
+          ) {
+            const rotatedVertex = rotateVertex(
+              vertex.x,
+              vertex.y,
+              prevRef.current.center.x,
+              prevRef.current.center.y,
+              -prevRef.current.rotate,
+            )
+            const x = remap(
+              rotatedVertex.x,
+              -prevRef.current.width / 2,
+              prevRef.current.width / 2,
+              -width / 2,
+              width / 2,
+            )
+            const y = remap(
+              rotatedVertex.y,
+              -prevRef.current.height / 2,
+              prevRef.current.height / 2,
+              -height / 2,
+              height / 2,
+            )
+            const nextVertex = rotateVertex(x, y, 0, 0, prevRef.current.rotate)
+
+            return {
+              ...vertex,
+              x: nextVertex.x + prevRef.current.center.x,
+              y: nextVertex.y + prevRef.current.center.y,
+            }
+          } else return vertex
+        })
 
         handlerRef.current.style.width = nextWidth + 'px'
         handlerRef.current.style.height = nextHeight + 'px'
         handlerRef.current.style.left = nextCenterX - nextWidth / 2 + 'px'
         handlerRef.current.style.top = nextCenterY - nextHeight / 2 + 'px'
+
         setDrawings((drawings) =>
           drawings.map((drawing) =>
             drawing.id === selectedDrawing.id
@@ -218,76 +262,33 @@ const Handler = () => {
           ),
         )
       }
-      const deltaX = (rotatedEndX - rotatedStartX) * 2
-      const deltaY = (rotatedEndY - rotatedStartY) * 2
-      let nextWidth = 0
-      let nextHeight = 0
-      const nextCenterX =
-        (handlerRef.current.getBoundingClientRect().left +
-          handlerRef.current.getBoundingClientRect().right) /
-        2
-
-      const nextCenterY =
-        (handlerRef.current.getBoundingClientRect().top +
-          handlerRef.current.getBoundingClientRect().bottom) /
-        2
+      const deltaX = (rotatedEndPoint.x - rotatedStartPoint.x) * 2
+      const deltaY = (rotatedEndPoint.y - rotatedStartPoint.y) * 2
 
       switch (directionRef.current) {
         case 'TL':
-          nextWidth = Math.abs(prevRef.current.width - deltaX)
-          nextHeight = Math.abs(prevRef.current.height - deltaY)
-          setResize(nextWidth, nextHeight, nextCenterX, nextCenterY)
+          resize(-deltaX, -deltaY)
           break
         case 'T':
-          nextHeight = Math.abs(prevRef.current.height - deltaY)
-          setResize(
-            prevRef.current.width,
-            nextHeight,
-            prevRef.current.center.x,
-            nextCenterY,
-          )
+          resize(0, -deltaY)
           break
         case 'TR':
-          nextWidth = Math.abs(prevRef.current.width + deltaX)
-          nextHeight = Math.abs(prevRef.current.height - deltaY)
-          setResize(nextWidth, nextHeight, nextCenterX, nextCenterY)
+          resize(deltaX, -deltaY)
           break
         case 'L':
-          nextWidth = Math.abs(prevRef.current.width - deltaX)
-          setResize(
-            nextWidth,
-            prevRef.current.height,
-            nextCenterX,
-            prevRef.current.center.y,
-          )
+          resize(-deltaX, 0)
           break
         case 'R':
-          nextWidth = Math.abs(prevRef.current.width + deltaX)
-          setResize(
-            nextWidth,
-            prevRef.current.height,
-            nextCenterX,
-            prevRef.current.center.y,
-          )
+          resize(deltaX, 0)
           break
         case 'BL':
-          nextWidth = Math.abs(prevRef.current.width - deltaX)
-          nextHeight = Math.abs(prevRef.current.height + deltaY)
-          setResize(nextWidth, nextHeight, nextCenterX, nextCenterY)
+          resize(-deltaX, deltaY)
           break
         case 'B':
-          nextHeight = Math.abs(prevRef.current.height + deltaY)
-          setResize(
-            prevRef.current.width,
-            nextHeight,
-            prevRef.current.center.x,
-            nextCenterY,
-          )
+          resize(0, deltaY)
           break
         case 'BR':
-          nextWidth = Math.abs(prevRef.current.width + deltaX)
-          nextHeight = Math.abs(prevRef.current.height + deltaY)
-          setResize(nextWidth, nextHeight, nextCenterX, nextCenterY)
+          resize(deltaX, deltaY)
           break
         default:
           break
@@ -314,12 +315,34 @@ const Handler = () => {
       const nextRotate = prevRef.current.rotate + rotateAngle
       handlerRef.current.style.rotate = nextRotate + 'deg'
 
+      const nextVertexs = prevRef.current.vertexs.map((vertex) => {
+        if (
+          prevRef.current.center.x === null ||
+          prevRef.current.center.y === null
+        )
+          return vertex
+        else {
+          const r = rotateAngle * (Math.PI / 180)
+
+          const nextX =
+            (vertex.x - prevRef.current.center.x) * Math.cos(r) -
+            (vertex.y - prevRef.current.center.y) * Math.sin(r) +
+            prevRef.current.center.x
+          const nextY =
+            (vertex.x - prevRef.current.center.x) * Math.sin(r) +
+            (vertex.y - prevRef.current.center.y) * Math.cos(r) +
+            prevRef.current.center.y
+          return { ...vertex, x: nextX, y: nextY }
+        }
+      })
+
       setDrawings((drawings) =>
         drawings.map((drawing) =>
           drawing.id === selectedDrawing.id
             ? {
                 ...drawing,
                 rotate: nextRotate,
+                vertexs: nextVertexs,
               }
             : drawing,
         ),
@@ -352,16 +375,6 @@ const Handler = () => {
     setOpenItemMenu({ open: false, x: null, y: null })
   }
 
-  useEffect(() => {
-    window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('mouseup', handleMouseUp)
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
-    }
-  }, [])
-
   return (
     <>
       <div
@@ -377,6 +390,7 @@ const Handler = () => {
       >
         {resizeHandler.map(({ position, direction }) => (
           <div
+            key={direction}
             className={`${position} absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-blue-400 rounded-full cursor-nwse-resize`}
             onMouseDown={(e) => {
               transitionType.current = 'RESIZE'
@@ -387,8 +401,9 @@ const Handler = () => {
             onMouseUp={handleMouseUp}
           />
         ))}
-        {rotateHandler.map(({ position }) => (
+        {rotateHandler.map(({ position, key }) => (
           <div
+            key={key}
             className={`absolute w-8 h-8 cursor-rotate ${position}`}
             onMouseDown={(e) => {
               transitionType.current = 'ROTATE'
