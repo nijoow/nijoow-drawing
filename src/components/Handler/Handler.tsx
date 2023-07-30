@@ -318,12 +318,33 @@ const Handler = () => {
       const nextRotate = prevRef.current.rotate + rotateAngle
       handlerRef.current.style.rotate = nextRotate + 'deg'
 
+      const nextVertexs = prevRef.current.vertexs.map((vertex) => {
+        if (
+          prevRef.current.center.x === null ||
+          prevRef.current.center.y === null
+        )
+          return vertex
+        else {
+          const r = rotateAngle * (Math.PI / 180)
+
+          const nextX =
+            (vertex.x - prevRef.current.center.x) * Math.cos(r) -
+            (vertex.y - prevRef.current.center.y) * Math.sin(r) +
+            prevRef.current.center.x
+          const nextY =
+            (vertex.x - prevRef.current.center.x) * Math.sin(r) +
+            (vertex.y - prevRef.current.center.y) * Math.cos(r) +
+            prevRef.current.center.y
+          return { ...vertex, x: nextX, y: nextY }
+        }
+      })
+
       setDrawings((drawings) =>
         drawings.map((drawing) =>
           drawing.id === selectedDrawing.id
             ? {
                 ...drawing,
-                rotate: nextRotate,
+                vertexs: nextVertexs,
               }
             : drawing,
         ),
