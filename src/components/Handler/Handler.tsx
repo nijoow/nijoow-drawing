@@ -8,6 +8,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { IoCloseCircleOutline } from 'react-icons/io5'
 import { remap } from '@/utils/remap'
+import { rotateVertex } from '@/utils/rotateVertex'
 
 const defaultPoint = {
   startX: undefined,
@@ -48,6 +49,8 @@ const Handler = () => {
   const [, setDrawings] = useRecoilState(drawingsAtom)
   const selectedDrawing = useRecoilValue(selectedDrawingState)
 
+  if (!selectedDrawing) return null
+
   // useState
   const [openItemMenu, setOpenItemMenu] = useState<{
     open: boolean
@@ -66,15 +69,15 @@ const Handler = () => {
   //useEffect
   useEffect(() => {
     if (!handlerRef.current) return
-    handlerRef.current.style.width = `${selectedDrawing?.width}px`
-    handlerRef.current.style.height = `${selectedDrawing?.height}px`
+    handlerRef.current.style.width = `${selectedDrawing.width}px`
+    handlerRef.current.style.height = `${selectedDrawing.height}px`
     handlerRef.current.style.top = `${
-      selectedDrawing?.center.y - selectedDrawing?.height / 2
+      selectedDrawing.center.y - selectedDrawing.height / 2
     }px`
     handlerRef.current.style.left = `${
-      selectedDrawing?.center.x - selectedDrawing?.width / 2
+      selectedDrawing.center.x - selectedDrawing.width / 2
     }px`
-    handlerRef.current.style.rotate = `${selectedDrawing?.rotate}deg`
+    handlerRef.current.style.rotate = `${selectedDrawing.rotate}deg`
   }, [selectedDrawingId])
 
   // function
@@ -97,9 +100,7 @@ const Handler = () => {
       handlerRef.current.offsetLeft + prevRef.current.width / 2
     prevRef.current.center.y =
       handlerRef.current.offsetTop + prevRef.current.height / 2
-    prevRef.current.rotate = Number(
-      handlerRef.current.style.rotate.slice(0, -3),
-    )
+    prevRef.current.rotate = selectedDrawing.rotate
     prevRef.current.vertexs = selectedDrawing.vertexs
   }
 
@@ -154,66 +155,96 @@ const Handler = () => {
       )
     } else if (transitionType.current === 'RESIZE') {
       if (!directionRef.current) return
-      const r = -prevRef.current.rotate * (Math.PI / 180)
-      const rotatedStartX =
-        (point.current.startX - prevRef.current.center.x) * Math.cos(r) -
-        (point.current.startY - prevRef.current.center.y) * Math.sin(r)
-      const rotatedStartY =
-        (point.current.startX - prevRef.current.center.x) * Math.sin(r) +
-        (point.current.startY - prevRef.current.center.y) * Math.cos(r)
 
-      const rotatedEndX =
-        (event.clientX - prevRef.current.center.x) * Math.cos(r) -
-        (event.clientY - prevRef.current.center.y) * Math.sin(r)
+      const rotatedStartPoint = rotateVertex(
+        point.current.startX,
+        point.current.startY,
+        prevRef.current.center.x,
+        prevRef.current.center.y,
+        -prevRef.current.rotate,
+      )
+      const rotatedEndPoint = rotateVertex(
+        event.clientX,
+        event.clientY,
+        prevRef.current.center.x,
+        prevRef.current.center.y,
+        -prevRef.current.rotate,
+      )
 
-      const rotatedEndY =
-        (event.clientX - prevRef.current.center.x) * Math.sin(r) +
-        (event.clientY - prevRef.current.center.y) * Math.cos(r)
-
-      const setResize = (
-        nextWidth: number,
-        nextHeight: number,
-        nextCenterX: number,
-        nextCenterY: number,
-      ) => {
-        if (!handlerRef.current) return
-
-        const nextVertexs = prevRef.current.vertexs?.map((vertex) =>
-          prevRef.current.width && prevRef.current.height
-            ? {
-                ...vertex,
-                x: remap(
-                  vertex.x,
-                  prevLeft,
-                  prevLeft + prevRef.current.width,
-                  nextCenterX - nextWidth / 2,
-                  nextCenterX + nextWidth / 2,
-                ),
-                y: remap(
-                  vertex.y,
-                  prevTop,
-                  prevTop + prevRef.current.height,
-                  nextCenterY - nextHeight / 2,
-                  nextCenterY + nextHeight / 2,
-                ),
-              }
-            : vertex,
+      const resize = (deltaX: number, deltaY: number) => {
+        if (
+          handlerRef.current === null ||
+          prevRef.current.width === null ||
+          prevRef.current.height === null
         )
-        const width = Math.abs(nextWidth)
-        const height = Math.abs(nextHeight)
+          return
+        const nextCenterX =
+          (handlerRef.current.getBoundingClientRect().left +
+            handlerRef.current.getBoundingClientRect().right) /
+          2
 
-        handlerRef.current.style.width = width + 'px'
-        handlerRef.current.style.height = height + 'px'
-        handlerRef.current.style.left = nextCenterX - width / 2 + 'px'
-        handlerRef.current.style.top = nextCenterY - height / 2 + 'px'
+        const nextCenterY =
+          (handlerRef.current.getBoundingClientRect().top +
+            handlerRef.current.getBoundingClientRect().bottom) /
+          2
+
+        const width = prevRef.current.width + deltaX
+        const height = prevRef.current.height + deltaY
+
+        const nextWidth = Math.abs(width)
+        const nextHeight = Math.abs(height)
+
+        const nextVertexs = prevRef.current.vertexs?.map((vertex) => {
+          if (
+            prevRef.current.width &&
+            prevRef.current.height &&
+            prevRef.current.center.x &&
+            prevRef.current.center.y &&
+            prevRef.current.rotate !== null
+          ) {
+            const rotatedVertex = rotateVertex(
+              vertex.x,
+              vertex.y,
+              prevRef.current.center.x,
+              prevRef.current.center.y,
+              -prevRef.current.rotate,
+            )
+            const x = remap(
+              rotatedVertex.x,
+              -prevRef.current.width / 2,
+              prevRef.current.width / 2,
+              -width / 2,
+              width / 2,
+            )
+            const y = remap(
+              rotatedVertex.y,
+              -prevRef.current.height / 2,
+              prevRef.current.height / 2,
+              -height / 2,
+              height / 2,
+            )
+            const nextVertex = rotateVertex(x, y, 0, 0, prevRef.current.rotate)
+
+            return {
+              ...vertex,
+              x: nextVertex.x + prevRef.current.center.x,
+              y: nextVertex.y + prevRef.current.center.y,
+            }
+          } else return vertex
+        })
+
+        handlerRef.current.style.width = nextWidth + 'px'
+        handlerRef.current.style.height = nextHeight + 'px'
+        handlerRef.current.style.left = nextCenterX - nextWidth / 2 + 'px'
+        handlerRef.current.style.top = nextCenterY - nextHeight / 2 + 'px'
 
         setDrawings((drawings) =>
           drawings.map((drawing) =>
             drawing.id === selectedDrawing.id
               ? {
                   ...drawing,
-                  width: width,
-                  height: height,
+                  width: nextWidth,
+                  height: nextHeight,
                   center: { x: nextCenterX, y: nextCenterY },
                   vertexs: nextVertexs,
                 }
@@ -221,77 +252,33 @@ const Handler = () => {
           ),
         )
       }
-      const deltaX = (rotatedEndX - rotatedStartX) * 2
-      const deltaY = (rotatedEndY - rotatedStartY) * 2
-      let nextWidth = 0
-      let nextHeight = 0
-      const nextCenterX =
-        (handlerRef.current.getBoundingClientRect().left +
-          handlerRef.current.getBoundingClientRect().right) /
-        2
-
-      const nextCenterY =
-        (handlerRef.current.getBoundingClientRect().top +
-          handlerRef.current.getBoundingClientRect().bottom) /
-        2
+      const deltaX = (rotatedEndPoint.x - rotatedStartPoint.x) * 2
+      const deltaY = (rotatedEndPoint.y - rotatedStartPoint.y) * 2
 
       switch (directionRef.current) {
         case 'TL':
-          // 수정 필요
-          nextWidth = prevRef.current.width - deltaX
-          nextHeight = prevRef.current.height - deltaY
-          setResize(nextWidth, nextHeight, nextCenterX, nextCenterY)
+          resize(-deltaX, -deltaY)
           break
         case 'T':
-          nextHeight = prevRef.current.height - deltaY
-          setResize(
-            prevRef.current.width,
-            nextHeight,
-            prevRef.current.center.x,
-            nextCenterY,
-          )
+          resize(0, -deltaY)
           break
         case 'TR':
-          nextWidth = prevRef.current.width + deltaX
-          nextHeight = prevRef.current.height - deltaY
-          setResize(nextWidth, nextHeight, nextCenterX, nextCenterY)
+          resize(deltaX, -deltaY)
           break
         case 'L':
-          nextWidth = prevRef.current.width - deltaX
-          setResize(
-            nextWidth,
-            prevRef.current.height,
-            nextCenterX,
-            prevRef.current.center.y,
-          )
+          resize(-deltaX, 0)
           break
         case 'R':
-          nextWidth = prevRef.current.width + deltaX
-          setResize(
-            nextWidth,
-            prevRef.current.height,
-            nextCenterX,
-            prevRef.current.center.y,
-          )
+          resize(deltaX, 0)
           break
         case 'BL':
-          nextWidth = prevRef.current.width - deltaX
-          nextHeight = prevRef.current.height + deltaY
-          setResize(nextWidth, nextHeight, nextCenterX, nextCenterY)
+          resize(-deltaX, deltaY)
           break
         case 'B':
-          nextHeight = prevRef.current.height + deltaY
-          setResize(
-            prevRef.current.width,
-            nextHeight,
-            prevRef.current.center.x,
-            nextCenterY,
-          )
+          resize(0, deltaY)
           break
         case 'BR':
-          nextWidth = prevRef.current.width + deltaX
-          nextHeight = prevRef.current.height + deltaY
-          setResize(nextWidth, nextHeight, nextCenterX, nextCenterY)
+          resize(deltaX, deltaY)
           break
         default:
           break
@@ -344,6 +331,7 @@ const Handler = () => {
           drawing.id === selectedDrawing.id
             ? {
                 ...drawing,
+                rotate: nextRotate,
                 vertexs: nextVertexs,
               }
             : drawing,
