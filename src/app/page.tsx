@@ -10,7 +10,7 @@ import {
   selectedDrawingState,
 } from '@/recoil/atoms'
 import SideToolBar from '@/components/ToolBar/SideToolBar'
-import { Point } from '@/types/type'
+import { Drawing, DrawingType, Point, Vertex } from '@/types/type'
 import { v4 as uuid } from 'uuid'
 import {
   getHeightFromPoint,
@@ -18,14 +18,13 @@ import {
   getTopFromPoint,
   getWidthFromPoint,
 } from '@/utils/getValueFromPoint'
-import Rectangle from '@/components/Drawings/Rectangle'
 import Ellipse from '@/components/Drawings/Ellipse'
-import Triangle from '@/components/Drawings/Triangle'
 import TopToolBar from '@/components/ToolBar/TopToolBar'
 import Handler from '@/components/Handler/Handler'
 import Polygon from '@/components/Drawings/Polygon'
 import { getInformationFromVertexs } from '@/utils/getInformationFromVertex'
 import Path from '@/components/Drawings/Path'
+import VertexHandler from '@/components/Handler/VertexHandler'
 
 const defaultPoint = {
   startX: undefined,
@@ -35,24 +34,32 @@ const defaultPoint = {
 }
 
 export default function Home() {
+  //recoil
   const [mode, setMode] = useRecoilState(modeAtom)
   const currentOptions = useRecoilValue(currentOptionsState)
-  const [selectedDrawingId, setSelectedDrawingId] = useRecoilState(
-    selectedDrawingIdAtom,
-  )
+  const [, setSelectedDrawingId] = useRecoilState(selectedDrawingIdAtom)
   const [drawings, setDrawings] = useRecoilState(drawingsAtom)
-  const isDragged = useRef(false)
+  const selectedDrawing = useRecoilValue(selectedDrawingState)
 
+  //useState
   const [point, setPoint] = useState<Point>(defaultPoint)
-
   const [vertexs, setVertexs] = useState<
     { x: number; y: number; id: string }[]
   >([])
 
-  const selectedDrawing = useRecoilValue(selectedDrawingState)
-  console.log(selectedDrawing?.vertexs)
+  //useRef
+  const isDragged = useRef(false)
+
+  //useEffect
+  useEffect(() => {
+    if (mode.type !== 'VERTEX') {
+      setVertexs([])
+    }
+  }, [mode])
+
+  //function
   const handleMouseDown = (event: React.MouseEvent) => {
-    if (!selectedDrawingId && event.target instanceof SVGElement) {
+    if (!selectedDrawing?.id && event.target instanceof SVGElement) {
       setSelectedDrawingId(event.target.id)
     } else {
       setSelectedDrawingId(null)
@@ -76,6 +83,7 @@ export default function Home() {
     isDragged.current = false
     if (
       mode.type === 'SHAPE' &&
+      mode.subType &&
       point.startX &&
       point.startY &&
       point.endX &&
@@ -85,18 +93,36 @@ export default function Home() {
       const centerY = (point.startY + point.endY) / 2
       const width = Math.abs(point.endX - point.startX)
       const height = Math.abs(point.endY - point.startY)
-
+      const shapeVertexs: { [key: string]: Vertex[] } = {
+        RECTANGLE: [
+          { x: point.startX, y: point.startY, id: uuid() },
+          { x: point.startX, y: point.endY, id: uuid() },
+          { x: point.endX, y: point.endY, id: uuid() },
+          { x: point.endX, y: point.startY, id: uuid() },
+        ],
+        TRIANGLE: [
+          { x: centerX, y: point.startY, id: uuid() },
+          { x: point.startX, y: point.endY, id: uuid() },
+          { x: point.endX, y: point.endY, id: uuid() },
+        ],
+        ELLIPSE: [],
+      }
+      const drawingType: { [key: string]: DrawingType } = {
+        RECTANGLE: 'POLYGON',
+        TRIANGLE: 'POLYGON',
+        ELLIPSE: 'ELLIPSE',
+      }
       setDrawings([
         ...drawings,
         {
           id: uuid(),
-          type: 'POLYGON',
+          type: drawingType[mode.subType],
           subType: null,
           center: { x: centerX, y: centerY },
           width,
           height,
           rotate: 0,
-          vertexs: [],
+          vertexs: shapeVertexs[mode.subType],
           fill: currentOptions.fill,
           stroke: currentOptions.stroke,
           strokeWidth: currentOptions.strokeWidth,
@@ -109,17 +135,11 @@ export default function Home() {
     setPoint(defaultPoint)
   }
 
-  useEffect(() => {
-    if (mode.type !== 'VERTEX') {
-      setVertexs([])
-    }
-  }, [mode])
-
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (mode.type === 'VERTEX') {
       if (event.key === 'Escape') {
         setVertexs([])
-        // setMode({ type: 'SELECT', subType: null })
+        setMode({ type: 'SELECT', subType: null })
       }
       if (event.key === 'Enter') {
         const { width, height, center } = getInformationFromVertexs(vertexs)
@@ -149,6 +169,40 @@ export default function Home() {
     event.preventDefault()
   }
 
+  const handleMouseDownSvg = (event: React.MouseEvent) => {
+    if (event.buttons === 2) {
+      setMode({ type: 'SELECT', subType: null })
+      return
+    }
+    setVertexs([{ x: event.clientX, y: event.clientY, id: uuid() }, ...vertexs])
+  }
+
+  const handleMouseDownVertex = (event: React.MouseEvent, index: number) => {
+    event.stopPropagation()
+    if (index === vertexs.length - 1) {
+      const { width, height, center } = getInformationFromVertexs(vertexs)
+      setDrawings([
+        ...drawings,
+        {
+          id: uuid(),
+          type: 'POLYGON',
+          subType: null,
+          vertexs: vertexs,
+          width,
+          height,
+          center,
+          rotate: 0,
+          fill: currentOptions.fill,
+          stroke: currentOptions.stroke,
+          strokeWidth: currentOptions.strokeWidth,
+          opacity: currentOptions.opacity,
+        },
+      ])
+      setMode({ type: 'SELECT', subType: null })
+      setVertexs([])
+    }
+  }
+
   return (
     <main className="w-full h-full" onContextMenu={handleContextMenu}>
       <TopToolBar />
@@ -160,12 +214,14 @@ export default function Home() {
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
-        {drawings.map((drawing: any, index: number) => {
+        {drawings.map((drawing: Drawing, index: number) => {
           switch (drawing.type) {
             case 'POLYGON':
               return <Polygon key={drawing.id} drawing={drawing} />
             case 'PATH':
               return <Path key={drawing.id} drawing={drawing} />
+            case 'ELLIPSE':
+              return <Ellipse key={drawing.id} drawing={drawing} />
             default:
               break
           }
@@ -189,16 +245,7 @@ export default function Home() {
           width={window.innerWidth}
           height={window.innerHeight}
           tabIndex={0}
-          onMouseDown={(event) => {
-            if (event.buttons === 2) {
-              setMode({ type: 'SELECT', subType: null })
-              return
-            }
-            setVertexs([
-              { x: event.clientX, y: event.clientY, id: uuid() },
-              ...vertexs,
-            ])
-          }}
+          onMouseDown={(event) => handleMouseDownSvg(event)}
           onKeyDown={handleKeyDown}
           className="absolute top-0 left-0"
         >
@@ -252,37 +299,13 @@ export default function Home() {
                   : 'stroke-blue-400'
               }`}
               style={{ cursor: 'pointer' }}
-              onMouseDown={(event) => {
-                event.stopPropagation()
-                if (index === vertexs.length - 1) {
-                  const { width, height, center } =
-                    getInformationFromVertexs(vertexs)
-                  setDrawings([
-                    ...drawings,
-                    {
-                      id: uuid(),
-                      type: 'POLYGON',
-                      subType: null,
-                      vertexs: vertexs,
-                      width,
-                      height,
-                      center,
-                      rotate: 0,
-                      fill: currentOptions.fill,
-                      stroke: currentOptions.stroke,
-                      strokeWidth: currentOptions.strokeWidth,
-                      opacity: currentOptions.opacity,
-                    },
-                  ])
-                  setMode({ type: 'SELECT', subType: null })
-                  setVertexs([])
-                }
-              }}
+              onMouseDown={(event) => handleMouseDownVertex(event, index)}
             />
           ))}
         </svg>
       )}
       {selectedDrawing && mode.subType === 'SHAPE' && <Handler />}
+      {selectedDrawing && mode.subType === 'VERTEX' && <VertexHandler />}
     </main>
   )
 }

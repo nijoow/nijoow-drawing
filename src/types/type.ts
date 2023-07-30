@@ -1,7 +1,7 @@
 type ModeType = 'SELECT' | 'PENCIL' | 'VERTEX' | 'SHAPE' | 'TEXT'
 type ModeSubType = 'SHAPE' | 'VERTEX' | 'RECTANGLE' | 'ELLIPSE' | 'TRIANGLE'
 type Option = 'FILL' | 'STROKE' | 'STORKE_WIDTH' | 'OPACITY' | null
-type DrawingType = 'POLYGON' | 'PATH' | 'TEXT'
+export type DrawingType = 'POLYGON' | 'PATH' | 'ELLIPSE' | 'TEXT'
 type DrawingSubType = 'POLYGON' | 'RECT' | 'CIRCLE' | 'TEXT' | 'LINE' | 'PATH'
 
 export type Direction = 'TL' | 'T' | 'TR' | 'L' | 'R' | 'BL' | 'B' | 'BR' | null
