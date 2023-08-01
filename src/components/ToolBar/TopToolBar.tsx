@@ -7,22 +7,96 @@ import {
   basicOptionsAtom,
   currentOptionsState,
   drawingsAtom,
-  selectedDrawingIdAtom,
+  recentColorsAtom,
   selectedDrawingState,
 } from '@/recoil/atoms'
 import { OptionsToolBar } from '@/types/type'
-import { ChromePicker } from 'react-color'
+import { ChromePicker, ColorResult } from 'react-color'
 import Slider from '@/components/Slider/Slider'
 
-export default function TopToolBar() {
+const ColorSubToolBar = ({ type }: { type: 'fill' | 'stroke' }) => {
   const selectedDrawing = useRecoilValue(selectedDrawingState)
   const [drawings, setDrawings] = useRecoilState(drawingsAtom)
+  const currentOptions = useRecoilValue(currentOptionsState)
+  const [, setBasicOptions] = useRecoilState(basicOptionsAtom)
+  const [recentColors, setRecentColors] = useRecoilState(recentColorsAtom)
 
+  const handleClickRecentColor = (color: string) => {
+    if (selectedDrawing)
+      setDrawings(
+        drawings.map((drawing) =>
+          drawing.id === selectedDrawing.id
+            ? {
+                ...drawing,
+                [type]: color,
+              }
+            : drawing,
+        ),
+      )
+    else setBasicOptions({ ...currentOptions, [type]: color })
+  }
+
+  const onChangeColorPicker = (color: ColorResult) => {
+    if (selectedDrawing)
+      setDrawings(
+        drawings.map((drawing) =>
+          drawing.id === selectedDrawing.id
+            ? {
+                ...drawing,
+                [type]: color.hex,
+              }
+            : drawing,
+        ),
+      )
+    else setBasicOptions({ ...currentOptions, [type]: color.hex })
+  }
+
+  const onChangeCompleteColorPicker = (color: ColorResult) => {
+    let nextRecentColors
+    if (recentColors.includes(color.hex)) {
+      nextRecentColors = [
+        currentOptions[type],
+        ...recentColors.filter((color) => color !== currentOptions[type]),
+      ]
+    } else {
+      nextRecentColors = [currentOptions[type], ...recentColors]
+    }
+    setRecentColors(nextRecentColors.slice(0, 8))
+  }
+
+  return (
+    <div className="absolute flex-col left-0 gap-2 flex p-3 bg-gray-600 rounded-lg top-full">
+      <div className="w-full h-5 flex gap-[9px]">
+        {recentColors.map((color) => (
+          <div
+            key={color}
+            className="w-5 h-5 cursor-pointer rounded-sm"
+            style={{ backgroundColor: color }}
+            onClick={() => handleClickRecentColor(color)}
+          />
+        ))}
+      </div>
+      <ChromePicker
+        disableAlpha
+        color={currentOptions[type]}
+        onChange={onChangeColorPicker}
+        onChangeComplete={onChangeCompleteColorPicker}
+      />
+    </div>
+  )
+}
+export default function TopToolBar() {
+  // recoil
+  const selectedDrawing = useRecoilValue(selectedDrawingState)
+  const [drawings, setDrawings] = useRecoilState(drawingsAtom)
   const currentOptions = useRecoilValue(currentOptionsState)
   const [, setBasicOptions] = useRecoilState(basicOptionsAtom)
   const [openSubToolBar, setOpenSubToolBar] = useState<OptionsToolBar>({
     type: null,
   })
+  const [recentColors, setRecentColors] = useRecoilState(recentColorsAtom)
+  console.log(recentColors)
+  // useRef
   const toolBarRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -51,28 +125,7 @@ export default function TopToolBar() {
         >
           <IoStop size={20} fill={currentOptions.fill} />
         </button>
-        {openSubToolBar.type === 'FILL' && (
-          <div className="absolute left-0 flex p-3 bg-gray-600 rounded-lg top-full">
-            <ChromePicker
-              disableAlpha
-              color={currentOptions.fill}
-              onChange={(color) => {
-                if (selectedDrawing)
-                  setDrawings(
-                    drawings.map((drawing) =>
-                      drawing.id === selectedDrawing.id
-                        ? {
-                            ...drawing,
-                            fill: color.hex,
-                          }
-                        : drawing,
-                    ),
-                  )
-                else setBasicOptions({ ...currentOptions, fill: color.hex })
-              }}
-            />
-          </div>
-        )}
+        {openSubToolBar.type === 'FILL' && <ColorSubToolBar type="fill" />}
       </div>
       <div className="relative flex items-center justify-center p-3 w-fit">
         <button
@@ -87,28 +140,7 @@ export default function TopToolBar() {
             <IoStop size={10} className="fill-white" />
           </div>
         </button>
-        {openSubToolBar.type === 'STROKE' && (
-          <div className="absolute left-0 flex p-3 bg-gray-600 rounded-lg top-full">
-            <ChromePicker
-              disableAlpha
-              color={currentOptions.stroke}
-              onChange={(color) => {
-                if (selectedDrawing)
-                  setDrawings(
-                    drawings.map((drawing) =>
-                      drawing.id === selectedDrawing.id
-                        ? {
-                            ...drawing,
-                            stroke: color.hex,
-                          }
-                        : drawing,
-                    ),
-                  )
-                else setBasicOptions({ ...currentOptions, stroke: color.hex })
-              }}
-            />
-          </div>
-        )}
+        {openSubToolBar.type === 'STROKE' && <ColorSubToolBar type="stroke" />}
       </div>
       <div className="relative flex items-center justify-center w-32 p-3">
         <button
