@@ -21,7 +21,7 @@ const VertexHandler = () => {
   const selectedVertexRef = useRef<Vertex | null>(null)
   const handlerRef = useRef<HTMLDivElement>(null)
 
-  //useEffect
+  // useEffect
   useEffect(() => {
     if (!handlerRef.current) return
     handlerRef.current.style.width = `${selectedDrawing.width}px`

@@ -66,7 +66,7 @@ const Handler = () => {
   const directionRef = useRef<Direction>(null)
   const prevRef = useRef<ShapeData>(defaultPrev)
 
-  //useEffect
+  // useEffect
   useEffect(() => {
     if (!handlerRef.current) return
     handlerRef.current.style.width = `${selectedDrawing.width}px`

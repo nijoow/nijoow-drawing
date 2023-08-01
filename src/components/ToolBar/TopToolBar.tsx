@@ -111,6 +111,40 @@ export default function TopToolBar() {
     return () => window.removeEventListener('mousedown', handleMouseDown)
   }, [])
 
+  const setStrokeWidthValue = (value: number) => {
+    if (selectedDrawing)
+      setDrawings(
+        drawings.map((drawing) =>
+          drawing.id === selectedDrawing.id
+            ? {
+                ...drawing,
+                strokeWidth: value,
+              }
+            : drawing,
+        ),
+      )
+    else setBasicOptions({ ...currentOptions, strokeWidth: value })
+  }
+
+  const setOpacityValue = (value: number) => {
+    if (selectedDrawing)
+      setDrawings(
+        drawings.map((drawing) =>
+          drawing.id === selectedDrawing.id
+            ? {
+                ...drawing,
+                opacity: Math.round(value) / 100,
+              }
+            : drawing,
+        ),
+      )
+    else
+      setBasicOptions({
+        ...currentOptions,
+        opacity: Math.round(value) / 100,
+      })
+  }
+
   return (
     <div
       ref={toolBarRef}
@@ -154,20 +188,7 @@ export default function TopToolBar() {
           <div className="absolute left-0 flex p-3 py-3 bg-gray-600 rounded-lg top-full">
             <Slider
               value={currentOptions.strokeWidth}
-              setValue={(value: number) => {
-                if (selectedDrawing)
-                  setDrawings(
-                    drawings.map((drawing) =>
-                      drawing.id === selectedDrawing.id
-                        ? {
-                            ...drawing,
-                            strokeWidth: value,
-                          }
-                        : drawing,
-                    ),
-                  )
-                else setBasicOptions({ ...currentOptions, strokeWidth: value })
-              }}
+              setValue={setStrokeWidthValue}
               option={{ min: 0, max: 50, step: 1 }}
             />
           </div>
@@ -188,24 +209,7 @@ export default function TopToolBar() {
           <div className="absolute left-0 flex p-3 bg-gray-600 rounded-lg top-full">
             <Slider
               value={currentOptions.opacity * 100}
-              setValue={(value: number) => {
-                if (selectedDrawing)
-                  setDrawings(
-                    drawings.map((drawing) =>
-                      drawing.id === selectedDrawing.id
-                        ? {
-                            ...drawing,
-                            opacity: Math.round(value) / 100,
-                          }
-                        : drawing,
-                    ),
-                  )
-                else
-                  setBasicOptions({
-                    ...currentOptions,
-                    opacity: Math.round(value) / 100,
-                  })
-              }}
+              setValue={setOpacityValue}
               option={{ min: 1, max: 100, step: 1 }}
             />
           </div>

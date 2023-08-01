@@ -50,7 +50,7 @@ export default function Home() {
   //useRef
   const isDragged = useRef(false)
 
-  //useEffect
+  // useEffect
   useEffect(() => {
     if (mode.type !== 'VERTEX') {
       setVertexs([])
