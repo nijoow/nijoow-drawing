@@ -7,24 +7,97 @@ import {
   basicOptionsAtom,
   currentOptionsState,
   drawingsAtom,
-  selectedDrawingIdAtom,
+  recentColorsAtom,
   selectedDrawingState,
 } from '@/recoil/atoms'
 import { OptionsToolBar } from '@/types/type'
-import { ChromePicker } from 'react-color'
+import { ChromePicker, ColorResult } from 'react-color'
 import Slider from '@/components/Slider/Slider'
 
-export default function TopToolBar() {
+const ColorSubToolBar = ({ type }: { type: 'fill' | 'stroke' }) => {
+  // recoil
   const selectedDrawing = useRecoilValue(selectedDrawingState)
   const [drawings, setDrawings] = useRecoilState(drawingsAtom)
+  const currentOptions = useRecoilValue(currentOptionsState)
+  const [, setBasicOptions] = useRecoilState(basicOptionsAtom)
+  const [recentColors, setRecentColors] = useRecoilState(recentColorsAtom)
 
+  // function
+  const handleClickNoneColor = () => setColor('none')
+
+  const handleClickRecentColor = (color: string) => setColor(color)
+
+  const onChangeColorPicker = (color: ColorResult) => setColor(color.hex)
+
+  const setColor = (color: string) => {
+    if (selectedDrawing)
+      setDrawings(
+        drawings.map((drawing) =>
+          drawing.id === selectedDrawing.id
+            ? {
+                ...drawing,
+                [type]: color,
+              }
+            : drawing,
+        ),
+      )
+    else setBasicOptions({ ...currentOptions, [type]: color })
+  }
+
+  const onChangeCompleteColorPicker = (color: ColorResult) => {
+    setRecentColors((recentColors) =>
+      (recentColors.includes(color.hex)
+        ? [
+            color.hex,
+            ...recentColors.filter((recentColor) => recentColor !== color.hex),
+          ]
+        : [color.hex, ...recentColors]
+      ).slice(0, 7),
+    )
+  }
+
+  return (
+    <div className="absolute flex-col left-0 gap-2 flex p-3 bg-gray-600 rounded-lg top-full">
+      <div className="w-full h-5 flex gap-[9px]">
+        <div
+          className="w-5 h-5 cursor-pointer bg-white rounded-sm flex items-center justify-center"
+          onClick={handleClickNoneColor}
+        >
+          <div className="bg-red-500 h-0.5 w-full rotate-45" />
+        </div>
+
+        {recentColors.map((color) => (
+          <div
+            key={color}
+            className="w-5 h-5 cursor-pointer rounded-sm"
+            style={{ backgroundColor: color }}
+            onClick={() => handleClickRecentColor(color)}
+          />
+        ))}
+      </div>
+      <ChromePicker
+        disableAlpha
+        color={currentOptions[type]}
+        onChange={onChangeColorPicker}
+        onChangeComplete={onChangeCompleteColorPicker}
+      />
+    </div>
+  )
+}
+export default function TopToolBar() {
+  // recoil
+  const selectedDrawing = useRecoilValue(selectedDrawingState)
+  const [drawings, setDrawings] = useRecoilState(drawingsAtom)
   const currentOptions = useRecoilValue(currentOptionsState)
   const [, setBasicOptions] = useRecoilState(basicOptionsAtom)
   const [openSubToolBar, setOpenSubToolBar] = useState<OptionsToolBar>({
     type: null,
   })
+
+  // useRef
   const toolBarRef = useRef<HTMLDivElement>(null)
 
+  // useEffect
   useEffect(() => {
     const handleMouseDown = (event: MouseEvent) => {
       if (
@@ -37,6 +110,40 @@ export default function TopToolBar() {
     window.addEventListener('mousedown', handleMouseDown)
     return () => window.removeEventListener('mousedown', handleMouseDown)
   }, [])
+
+  const setStrokeWidthValue = (value: number) => {
+    if (selectedDrawing)
+      setDrawings(
+        drawings.map((drawing) =>
+          drawing.id === selectedDrawing.id
+            ? {
+                ...drawing,
+                strokeWidth: value,
+              }
+            : drawing,
+        ),
+      )
+    else setBasicOptions({ ...currentOptions, strokeWidth: value })
+  }
+
+  const setOpacityValue = (value: number) => {
+    if (selectedDrawing)
+      setDrawings(
+        drawings.map((drawing) =>
+          drawing.id === selectedDrawing.id
+            ? {
+                ...drawing,
+                opacity: Math.round(value) / 100,
+              }
+            : drawing,
+        ),
+      )
+    else
+      setBasicOptions({
+        ...currentOptions,
+        opacity: Math.round(value) / 100,
+      })
+  }
 
   return (
     <div
@@ -51,28 +158,7 @@ export default function TopToolBar() {
         >
           <IoStop size={20} fill={currentOptions.fill} />
         </button>
-        {openSubToolBar.type === 'FILL' && (
-          <div className="absolute left-0 flex p-3 bg-gray-600 rounded-lg top-full">
-            <ChromePicker
-              disableAlpha
-              color={currentOptions.fill}
-              onChange={(color) => {
-                if (selectedDrawing)
-                  setDrawings(
-                    drawings.map((drawing) =>
-                      drawing.id === selectedDrawing.id
-                        ? {
-                            ...drawing,
-                            fill: color.hex,
-                          }
-                        : drawing,
-                    ),
-                  )
-                else setBasicOptions({ ...currentOptions, fill: color.hex })
-              }}
-            />
-          </div>
-        )}
+        {openSubToolBar.type === 'FILL' && <ColorSubToolBar type="fill" />}
       </div>
       <div className="relative flex items-center justify-center p-3 w-fit">
         <button
@@ -87,28 +173,7 @@ export default function TopToolBar() {
             <IoStop size={10} className="fill-white" />
           </div>
         </button>
-        {openSubToolBar.type === 'STROKE' && (
-          <div className="absolute left-0 flex p-3 bg-gray-600 rounded-lg top-full">
-            <ChromePicker
-              disableAlpha
-              color={currentOptions.stroke}
-              onChange={(color) => {
-                if (selectedDrawing)
-                  setDrawings(
-                    drawings.map((drawing) =>
-                      drawing.id === selectedDrawing.id
-                        ? {
-                            ...drawing,
-                            stroke: color.hex,
-                          }
-                        : drawing,
-                    ),
-                  )
-                else setBasicOptions({ ...currentOptions, stroke: color.hex })
-              }}
-            />
-          </div>
-        )}
+        {openSubToolBar.type === 'STROKE' && <ColorSubToolBar type="stroke" />}
       </div>
       <div className="relative flex items-center justify-center w-32 p-3">
         <button
@@ -123,20 +188,7 @@ export default function TopToolBar() {
           <div className="absolute left-0 flex p-3 py-3 bg-gray-600 rounded-lg top-full">
             <Slider
               value={currentOptions.strokeWidth}
-              setValue={(value: number) => {
-                if (selectedDrawing)
-                  setDrawings(
-                    drawings.map((drawing) =>
-                      drawing.id === selectedDrawing.id
-                        ? {
-                            ...drawing,
-                            strokeWidth: value,
-                          }
-                        : drawing,
-                    ),
-                  )
-                else setBasicOptions({ ...currentOptions, strokeWidth: value })
-              }}
+              setValue={setStrokeWidthValue}
               option={{ min: 0, max: 50, step: 1 }}
             />
           </div>
@@ -157,24 +209,7 @@ export default function TopToolBar() {
           <div className="absolute left-0 flex p-3 bg-gray-600 rounded-lg top-full">
             <Slider
               value={currentOptions.opacity * 100}
-              setValue={(value: number) => {
-                if (selectedDrawing)
-                  setDrawings(
-                    drawings.map((drawing) =>
-                      drawing.id === selectedDrawing.id
-                        ? {
-                            ...drawing,
-                            opacity: Math.round(value) / 100,
-                          }
-                        : drawing,
-                    ),
-                  )
-                else
-                  setBasicOptions({
-                    ...currentOptions,
-                    opacity: Math.round(value) / 100,
-                  })
-              }}
+              setValue={setOpacityValue}
               option={{ min: 1, max: 100, step: 1 }}
             />
           </div>

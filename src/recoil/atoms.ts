@@ -43,3 +43,8 @@ export const selectedDrawingState = selector({
     return drawings.find((drawing) => drawing.id === selectedDrawingId) ?? null
   },
 })
+
+export const recentColorsAtom = atom<string[]>({
+  key: 'RecentColors',
+  default: [],
+})
