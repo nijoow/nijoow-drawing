@@ -15,13 +15,21 @@ import { ChromePicker, ColorResult } from 'react-color'
 import Slider from '@/components/Slider/Slider'
 
 const ColorSubToolBar = ({ type }: { type: 'fill' | 'stroke' }) => {
+  // recoil
   const selectedDrawing = useRecoilValue(selectedDrawingState)
   const [drawings, setDrawings] = useRecoilState(drawingsAtom)
   const currentOptions = useRecoilValue(currentOptionsState)
   const [, setBasicOptions] = useRecoilState(basicOptionsAtom)
   const [recentColors, setRecentColors] = useRecoilState(recentColorsAtom)
 
-  const handleClickRecentColor = (color: string) => {
+  // function
+  const handleClickNoneColor = () => setColor('none')
+
+  const handleClickRecentColor = (color: string) => setColor(color)
+
+  const onChangeColorPicker = (color: ColorResult) => setColor(color.hex)
+
+  const setColor = (color: string) => {
     if (selectedDrawing)
       setDrawings(
         drawings.map((drawing) =>
@@ -36,37 +44,28 @@ const ColorSubToolBar = ({ type }: { type: 'fill' | 'stroke' }) => {
     else setBasicOptions({ ...currentOptions, [type]: color })
   }
 
-  const onChangeColorPicker = (color: ColorResult) => {
-    if (selectedDrawing)
-      setDrawings(
-        drawings.map((drawing) =>
-          drawing.id === selectedDrawing.id
-            ? {
-                ...drawing,
-                [type]: color.hex,
-              }
-            : drawing,
-        ),
-      )
-    else setBasicOptions({ ...currentOptions, [type]: color.hex })
-  }
-
   const onChangeCompleteColorPicker = (color: ColorResult) => {
-    let nextRecentColors
-    if (recentColors.includes(color.hex)) {
-      nextRecentColors = [
-        currentOptions[type],
-        ...recentColors.filter((color) => color !== currentOptions[type]),
-      ]
-    } else {
-      nextRecentColors = [currentOptions[type], ...recentColors]
-    }
-    setRecentColors(nextRecentColors.slice(0, 8))
+    setRecentColors((recentColors) =>
+      (recentColors.includes(color.hex)
+        ? [
+            color.hex,
+            ...recentColors.filter((recentColor) => recentColor !== color.hex),
+          ]
+        : [color.hex, ...recentColors]
+      ).slice(0, 7),
+    )
   }
 
   return (
     <div className="absolute flex-col left-0 gap-2 flex p-3 bg-gray-600 rounded-lg top-full">
       <div className="w-full h-5 flex gap-[9px]">
+        <div
+          className="w-5 h-5 cursor-pointer bg-white rounded-sm flex items-center justify-center"
+          onClick={handleClickNoneColor}
+        >
+          <div className="bg-red-500 h-0.5 w-full rotate-45" />
+        </div>
+
         {recentColors.map((color) => (
           <div
             key={color}
@@ -94,11 +93,11 @@ export default function TopToolBar() {
   const [openSubToolBar, setOpenSubToolBar] = useState<OptionsToolBar>({
     type: null,
   })
-  const [recentColors, setRecentColors] = useRecoilState(recentColorsAtom)
-  console.log(recentColors)
+
   // useRef
   const toolBarRef = useRef<HTMLDivElement>(null)
 
+  // useEffect
   useEffect(() => {
     const handleMouseDown = (event: MouseEvent) => {
       if (
