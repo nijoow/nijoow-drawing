@@ -41,7 +41,7 @@ interface Center {
 export interface Vertex {
   x: number
   y: number
-  id?: string
+  id: string
 }
 
 export interface ShapeData {

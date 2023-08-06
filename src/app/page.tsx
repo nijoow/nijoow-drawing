@@ -58,7 +58,7 @@ export default function Home() {
   const [vertexs, setVertexs] = useState<
     { x: number; y: number; id: string }[]
   >([])
-  const [spline, setSpline] = useState<{ x: number; y: number }[]>([])
+  const [spline, setSpline] = useState<Vertex[]>([])
 
   //useRef
   const isDragged = useRef(false)
@@ -329,13 +329,13 @@ export default function Home() {
           tabIndex={0}
           onMouseDown={(event) => {
             isDragged.current = true
-            setSpline([{ x: event.clientX, y: event.clientY }])
+            setSpline([{ x: event.clientX, y: event.clientY, id: uuid() }])
           }}
           onMouseMove={(event) => {
             if (!isDragged.current) return
             setSpline((spline) => [
               ...spline,
-              { x: event.clientX, y: event.clientY },
+              { x: event.clientX, y: event.clientY, id: uuid() },
             ])
           }}
           onMouseUp={(event) => {

@@ -3,7 +3,7 @@ import {
   selectedDrawingIdAtom,
   selectedDrawingState,
 } from '@/recoil/atoms'
-import { Direction, Point, ShapeData } from '@/types/type'
+import { Direction, Point, ShapeData, Vertex } from '@/types/type'
 import React, { useEffect, useRef, useState } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { IoCloseCircleOutline } from 'react-icons/io5'
@@ -152,13 +152,11 @@ const Handler = () => {
                 ...drawing,
                 center: nextCenter,
                 vertexs:
-                  prevRef.current.vertexs?.map(
-                    (vertex: { x: number; y: number; id: string }) => ({
-                      ...vertex,
-                      x: vertex.x + horizontalChange,
-                      y: vertex.y + verticalChange,
-                    }),
-                  ) || [],
+                  prevRef.current.vertexs?.map((vertex: Vertex) => ({
+                    ...vertex,
+                    x: vertex.x + horizontalChange,
+                    y: vertex.y + verticalChange,
+                  })) || [],
               }
             : drawing,
         ),
