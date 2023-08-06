@@ -10,7 +10,7 @@ import {
   selectedDrawingState,
 } from '@/recoil/atoms'
 import SideToolBar from '@/components/ToolBar/SideToolBar'
-import { Drawing, DrawingType, Point, Vertex } from '@/types/type'
+import { Drawing, DrawingType, ModeType, Point, Vertex } from '@/types/type'
 import { v4 as uuid } from 'uuid'
 import {
   getHeightFromPoint,
@@ -25,6 +25,11 @@ import Polygon from '@/components/Drawings/Polygon'
 import { getInformationFromVertexs } from '@/utils/getInformationFromVertex'
 import Path from '@/components/Drawings/Path'
 import VertexHandler from '@/components/Handler/VertexHandler'
+import {
+  bezierCommand,
+  getSvgInformationFromPath,
+} from '@/utils/getInformationFromSplinePaths'
+import Spline from '@/components/Drawings/Spline'
 
 const defaultPoint = {
   startX: undefined,
@@ -32,6 +37,13 @@ const defaultPoint = {
   endX: undefined,
   endY: undefined,
 }
+
+const dragBoxVisibleMode: Array<ModeType | null> = [
+  'SELECT',
+  'SHAPE',
+  'VERTEX',
+  'TEXT',
+]
 
 export default function Home() {
   //recoil
@@ -46,6 +58,7 @@ export default function Home() {
   const [vertexs, setVertexs] = useState<
     { x: number; y: number; id: string }[]
   >([])
+  const [spline, setSpline] = useState<Vertex[]>([])
 
   //useRef
   const isDragged = useRef(false)
@@ -222,12 +235,14 @@ export default function Home() {
               return <Path key={drawing.id} drawing={drawing} />
             case 'ELLIPSE':
               return <Ellipse key={drawing.id} drawing={drawing} />
+            case 'SPLINE':
+              return <Spline key={drawing.id} drawing={drawing} />
             default:
               break
           }
         })}
       </div>
-      {isDragged.current && (
+      {isDragged.current && dragBoxVisibleMode.includes(mode.type) && (
         <div
           className="absolute border border-blue-500"
           style={{
@@ -265,6 +280,7 @@ export default function Home() {
               strokeWidth={currentOptions.strokeWidth}
               opacity={currentOptions.opacity}
               strokeLinejoin="round"
+              strokeLinecap="round"
             />
           )}
           {vertexs.length > 1 && (
@@ -282,6 +298,7 @@ export default function Home() {
               fill="none"
               strokeWidth={2}
               strokeLinejoin="round"
+              strokeLinecap="round"
             />
           )}
           {vertexs.map((vertex, index) => (
@@ -302,6 +319,66 @@ export default function Home() {
               onMouseDown={(event) => handleMouseDownVertex(event, index)}
             />
           ))}
+        </svg>
+      )}
+      {mode.type === 'PENCIL' && (
+        <svg
+          viewBox={`0 0 ${window.innerWidth} ${window.innerHeight}`}
+          width={window.innerWidth}
+          height={window.innerHeight}
+          tabIndex={0}
+          onMouseDown={(event) => {
+            isDragged.current = true
+            setSpline([{ x: event.clientX, y: event.clientY, id: uuid() }])
+          }}
+          onMouseMove={(event) => {
+            if (!isDragged.current) return
+            setSpline((spline) => [
+              ...spline,
+              { x: event.clientX, y: event.clientY, id: uuid() },
+            ])
+          }}
+          onMouseUp={(event) => {
+            const { center, width, height } = getSvgInformationFromPath(spline)
+
+            setDrawings((drawings) => [
+              ...drawings,
+              {
+                id: uuid(),
+                type: 'SPLINE',
+                subType: null,
+                vertexs: spline,
+                width,
+                height,
+                center,
+                rotate: 0,
+                fill: 'none',
+                stroke: currentOptions.stroke,
+                strokeWidth: currentOptions.strokeWidth,
+                opacity: currentOptions.opacity,
+              },
+            ])
+            setSpline([])
+            isDragged.current = false
+          }}
+          onKeyDown={handleKeyDown}
+          className="absolute top-0 left-0"
+        >
+          <path
+            d={spline.reduce(
+              (acc, point, i, a) =>
+                i === 0
+                  ? `M ${point.x},${point.y}`
+                  : `${acc} ${bezierCommand(point, i, a)}`,
+              '',
+            )}
+            fill="none"
+            stroke={currentOptions.stroke}
+            strokeWidth={currentOptions.strokeWidth}
+            opacity={currentOptions.opacity}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
         </svg>
       )}
       {selectedDrawing && mode.subType === 'SHAPE' && <Handler />}

@@ -43,12 +43,11 @@ const VertexHandler = () => {
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [])
+  }, [selectedDrawing])
 
   // function
   const handleMouseDown = (event: React.MouseEvent, vertex: Vertex) => {
     event.stopPropagation()
-
     isDragged.current = true
     selectedVertexRef.current = vertex
   }
@@ -65,6 +64,7 @@ const VertexHandler = () => {
         ? { ...vertex, x: nextVertexX, y: nextVertexY }
         : vertex,
     )
+
     const rotatedVertexMinMax = nextVertexs.reduce(
       (acc, vertex) => {
         if (handlerRef.current === null) return acc
@@ -110,7 +110,7 @@ const VertexHandler = () => {
 
     setDrawings((drawings) =>
       drawings.map((drawing) =>
-        drawing.id === selectedDrawing.id
+        drawing.id === selectedDrawingId
           ? {
               ...drawing,
               width: nextWidth,
@@ -126,7 +126,6 @@ const VertexHandler = () => {
   const handleMouseUp = (event: React.MouseEvent | MouseEvent) => {
     event.stopPropagation()
     document.body.style.cursor = 'auto'
-
     isDragged.current = false
     selectedVertexRef.current = null
   }
@@ -161,24 +160,25 @@ const VertexHandler = () => {
             strokeLinejoin="round"
           />
         )}
-        {selectedDrawing.vertexs.map((vertex: Vertex, index: number) => (
-          <circle
-            key={vertex.id}
-            id={vertex.id}
-            cx={vertex.x}
-            cy={vertex.y}
-            r="4"
-            fill={'white'}
-            strokeWidth={2}
-            className={`${
-              index === selectedDrawing.vertexs.length - 1
-                ? 'stroke-red-400'
-                : 'stroke-blue-400'
-            }`}
-            style={{ cursor: 'pointer' }}
-            onMouseDown={(event) => handleMouseDown(event, vertex)}
-          />
-        ))}
+        {selectedDrawing.type !== 'SPLINE' &&
+          selectedDrawing.vertexs.map((vertex: Vertex, index: number) => (
+            <circle
+              key={vertex.id}
+              id={vertex.id}
+              cx={vertex.x}
+              cy={vertex.y}
+              r="4"
+              fill={'white'}
+              strokeWidth={2}
+              className={`${
+                index === selectedDrawing.vertexs.length - 1
+                  ? 'stroke-red-400'
+                  : 'stroke-blue-400'
+              }`}
+              style={{ cursor: 'pointer' }}
+              onMouseDown={(event) => handleMouseDown(event, vertex)}
+            />
+          ))}
       </svg>
     </>
   )

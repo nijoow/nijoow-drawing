@@ -23,7 +23,7 @@ const ColorSubToolBar = ({ type }: { type: 'fill' | 'stroke' }) => {
   const [recentColors, setRecentColors] = useRecoilState(recentColorsAtom)
 
   // function
-  const handleClickNoneColor = () => setColor('none')
+  const handleClickTransparentColor = () => setColor('transparent')
 
   const handleClickRecentColor = (color: string) => setColor(color)
 
@@ -61,7 +61,7 @@ const ColorSubToolBar = ({ type }: { type: 'fill' | 'stroke' }) => {
       <div className="w-full h-5 flex gap-[9px]">
         <div
           className="w-5 h-5 cursor-pointer bg-white rounded-sm flex items-center justify-center"
-          onClick={handleClickNoneColor}
+          onClick={handleClickTransparentColor}
         >
           <div className="bg-red-500 h-0.5 w-full rotate-45" />
         </div>
@@ -156,7 +156,11 @@ export default function TopToolBar() {
           className="flex items-center justify-center w-5 h-5 bg-white rounded-sm"
           onClick={() => setOpenSubToolBar({ type: 'FILL' })}
         >
-          <IoStop size={20} fill={currentOptions.fill} />
+          {currentOptions.fill === 'transparent' ? (
+            <div className="bg-red-500 h-0.5 w-full rotate-45" />
+          ) : (
+            <IoStop size={20} fill={currentOptions.fill} />
+          )}
         </button>
         {openSubToolBar.type === 'FILL' && <ColorSubToolBar type="fill" />}
       </div>
@@ -168,8 +172,16 @@ export default function TopToolBar() {
         >
           <div
             className="flex items-center justify-center w-[14.2px] h-[14.2px] rounded-sm"
-            style={{ backgroundColor: currentOptions.stroke }}
+            style={{
+              backgroundColor:
+                currentOptions.stroke === 'transparent'
+                  ? 'rgb(75, 85, 99)'
+                  : currentOptions.stroke,
+            }}
           >
+            {currentOptions.stroke === 'transparent' && (
+              <div className="bg-red-500 h-0.5 w-4 rotate-45 absolute" />
+            )}
             <IoStop size={10} className="fill-white" />
           </div>
         </button>

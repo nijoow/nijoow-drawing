@@ -1,9 +1,18 @@
-import { Drawing, Vertex } from '@/types/type'
+import { Drawing } from '@/types/type'
+import { bezierCommand } from '@/utils/getInformationFromSplinePaths'
 import React from 'react'
 
-const Polygon = ({ drawing }: { drawing: Drawing }) => {
+const Spline = ({ drawing }: { drawing: Drawing }) => {
   const left = drawing.center.x - drawing.width / 2
   const top = drawing.center.y - drawing.height / 2
+
+  const d = drawing.vertexs.reduce(
+    (acc, point, i, a) =>
+      i === 0
+        ? `M ${point.x},${point.y}`
+        : `${acc} ${bezierCommand(point, i, a)}`,
+    '',
+  )
   return (
     <svg
       id={drawing.id}
@@ -11,25 +20,24 @@ const Polygon = ({ drawing }: { drawing: Drawing }) => {
       width={drawing.width}
       height={drawing.height}
       overflow={'visible'}
-      className={`absolute `}
+      className={`absolute`}
       style={{
         left,
         top,
       }}
     >
-      <polygon
+      <path
         id={drawing.id}
-        points={drawing.vertexs
-          .map((vertex: Vertex) => `${vertex.x} ${vertex.y}`)
-          .join(', ')}
-        fill={drawing.fill}
+        d={d}
+        fill="none"
         stroke={drawing.stroke}
         strokeWidth={drawing.strokeWidth}
         opacity={drawing.opacity}
         strokeLinejoin="round"
+        strokeLinecap="round"
       />
     </svg>
   )
 }
 
-export default Polygon
+export default Spline

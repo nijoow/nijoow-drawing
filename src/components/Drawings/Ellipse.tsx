@@ -1,6 +1,7 @@
+import { Drawing } from '@/types/type'
 import React from 'react'
 
-const Ellipse = ({ drawing }: { drawing: any }) => {
+const Ellipse = ({ drawing }: { drawing: Drawing }) => {
   return (
     <svg
       id={drawing.id}
