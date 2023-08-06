@@ -72,7 +72,6 @@ export default function SideToolBar() {
         className={`py-2 w-full hover:text-[#4ea1d3] flex items-center justify-center ${
           mode.type === 'PENCIL' ? 'text-[#4ea1d3]' : ''
         }`}
-        disabled
         onClick={() => {
           setMode({ type: 'PENCIL', subType: null })
           setOpenSubToolBar({ type: null })

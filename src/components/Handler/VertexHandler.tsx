@@ -160,24 +160,25 @@ const VertexHandler = () => {
             strokeLinejoin="round"
           />
         )}
-        {selectedDrawing.vertexs.map((vertex: Vertex, index: number) => (
-          <circle
-            key={vertex.id}
-            id={vertex.id}
-            cx={vertex.x}
-            cy={vertex.y}
-            r="4"
-            fill={'white'}
-            strokeWidth={2}
-            className={`${
-              index === selectedDrawing.vertexs.length - 1
-                ? 'stroke-red-400'
-                : 'stroke-blue-400'
-            }`}
-            style={{ cursor: 'pointer' }}
-            onMouseDown={(event) => handleMouseDown(event, vertex)}
-          />
-        ))}
+        {selectedDrawing.type !== 'SPLINE' &&
+          selectedDrawing.vertexs.map((vertex: Vertex, index: number) => (
+            <circle
+              key={vertex.id}
+              id={vertex.id}
+              cx={vertex.x}
+              cy={vertex.y}
+              r="4"
+              fill={'white'}
+              strokeWidth={2}
+              className={`${
+                index === selectedDrawing.vertexs.length - 1
+                  ? 'stroke-red-400'
+                  : 'stroke-blue-400'
+              }`}
+              style={{ cursor: 'pointer' }}
+              onMouseDown={(event) => handleMouseDown(event, vertex)}
+            />
+          ))}
       </svg>
     </>
   )
