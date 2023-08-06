@@ -3,7 +3,7 @@ import {
   selectedDrawingIdAtom,
   selectedDrawingState,
 } from '@/recoil/atoms'
-import { Drawing, Vertex } from '@/types/type'
+import { Vertex } from '@/types/type'
 import React, { useEffect, useRef } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { rotateVertex } from '@/utils/rotateVertex'
