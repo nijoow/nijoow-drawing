@@ -1,6 +1,7 @@
+import { Drawing, Vertex } from '@/types/type'
 import React from 'react'
 
-const Polygon = ({ drawing }: { drawing: any }) => {
+const Polygon = ({ drawing }: { drawing: Drawing }) => {
   const left = drawing.center.x - drawing.width / 2
   const top = drawing.center.y - drawing.height / 2
   return (
@@ -19,10 +20,7 @@ const Polygon = ({ drawing }: { drawing: any }) => {
       <polygon
         id={drawing.id}
         points={drawing.vertexs
-          .map(
-            (vertex: { x: number; y: number; id: string }) =>
-              `${vertex.x} ${vertex.y}`,
-          )
+          .map((vertex: Vertex) => `${vertex.x} ${vertex.y}`)
           .join(', ')}
         fill={drawing.fill}
         stroke={drawing.stroke}
