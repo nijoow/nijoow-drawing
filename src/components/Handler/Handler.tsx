@@ -46,8 +46,11 @@ const resizeHandler = [
 const Handler = () => {
   // recoil
   const [selectedDrawingId] = useRecoilState(selectedDrawingIdAtom)
-  const [, setDrawings] = useRecoilState(drawingsAtom)
+  const [drawings, setDrawings] = useRecoilState(drawingsAtom)
   const selectedDrawing = useRecoilValue(selectedDrawingState)
+  const selectedDrawingIndex = drawings.findIndex(
+    (drawing) => drawing.id === selectedDrawingId,
+  )
 
   if (!selectedDrawing) return null
 
@@ -373,6 +376,48 @@ const Handler = () => {
     setOpenItemMenu({ open: false, x: null, y: null })
   }
 
+  const handleClickBringToFrontButton = () => {
+    if (drawings.length === 0) return
+
+    const nextDrawings = [...drawings]
+    nextDrawings.splice(selectedDrawingIndex, 1)
+    nextDrawings.splice(selectedDrawingIndex + 1, 0, selectedDrawing)
+    setDrawings(nextDrawings)
+
+    setOpenItemMenu({ open: false, x: null, y: null })
+  }
+
+  const handleClickSendToBackButton = () => {
+    if (drawings.length === 0) return
+
+    const nextDrawings = [...drawings]
+    nextDrawings.splice(selectedDrawingIndex, 1)
+    nextDrawings.splice(selectedDrawingIndex - 1, 0, selectedDrawing)
+    setDrawings(nextDrawings)
+
+    setOpenItemMenu({ open: false, x: null, y: null })
+  }
+
+  const handleClickBringForwardButton = () => {
+    if (drawings.length === 0) return
+
+    const nextDrawings = [...drawings]
+    nextDrawings.splice(selectedDrawingIndex, 1)
+    setDrawings([...nextDrawings, selectedDrawing])
+
+    setOpenItemMenu({ open: false, x: null, y: null })
+  }
+
+  const handleClickSendBackwardButton = () => {
+    if (drawings.length === 0) return
+
+    const nextDrawings = [...drawings]
+    nextDrawings.splice(selectedDrawingIndex, 1)
+    setDrawings([selectedDrawing, ...nextDrawings])
+
+    setOpenItemMenu({ open: false, x: null, y: null })
+  }
+
   return (
     <>
       <div
@@ -426,6 +471,28 @@ const Handler = () => {
           >
             Delete
           </div>
+          <div
+            className="cursor-pointer"
+            onClick={handleClickBringToFrontButton}
+          >
+            Bring To Front
+          </div>
+          <div className="cursor-pointer" onClick={handleClickSendToBackButton}>
+            Send To Back
+          </div>
+          <div
+            className="cursor-pointer"
+            onClick={handleClickBringForwardButton}
+          >
+            Bring Forward
+          </div>
+          <div
+            className="cursor-pointer"
+            onClick={handleClickSendBackwardButton}
+          >
+            Send Backward
+          </div>
+
           <div className="cursor-pointer" onClick={closeItemMenu}>
             <IoCloseCircleOutline size={24} />
           </div>
