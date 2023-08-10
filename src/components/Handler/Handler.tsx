@@ -9,6 +9,7 @@ import { useRecoilState, useRecoilValue } from 'recoil'
 import { IoCloseCircleOutline } from 'react-icons/io5'
 import { remap } from '@/utils/remap'
 import { rotateVertex } from '@/utils/rotateVertex'
+import VerticalDivider from '../common/VerticalDivider'
 
 const defaultPoint = {
   startX: undefined,
@@ -46,8 +47,11 @@ const resizeHandler = [
 const Handler = () => {
   // recoil
   const [selectedDrawingId] = useRecoilState(selectedDrawingIdAtom)
-  const [, setDrawings] = useRecoilState(drawingsAtom)
+  const [drawings, setDrawings] = useRecoilState(drawingsAtom)
   const selectedDrawing = useRecoilValue(selectedDrawingState)
+  const selectedDrawingIndex = drawings.findIndex(
+    (drawing) => drawing.id === selectedDrawingId,
+  )
 
   if (!selectedDrawing) return null
 
@@ -373,6 +377,48 @@ const Handler = () => {
     setOpenItemMenu({ open: false, x: null, y: null })
   }
 
+  const handleClickBringToFrontButton = () => {
+    if (drawings.length === 0) return
+
+    const nextDrawings = [...drawings]
+    nextDrawings.splice(selectedDrawingIndex, 1)
+    nextDrawings.splice(selectedDrawingIndex + 1, 0, selectedDrawing)
+    setDrawings(nextDrawings)
+
+    setOpenItemMenu({ open: false, x: null, y: null })
+  }
+
+  const handleClickSendToBackButton = () => {
+    if (drawings.length === 0) return
+
+    const nextDrawings = [...drawings]
+    nextDrawings.splice(selectedDrawingIndex, 1)
+    nextDrawings.splice(selectedDrawingIndex - 1, 0, selectedDrawing)
+    setDrawings(nextDrawings)
+
+    setOpenItemMenu({ open: false, x: null, y: null })
+  }
+
+  const handleClickBringForwardButton = () => {
+    if (drawings.length === 0) return
+
+    const nextDrawings = [...drawings]
+    nextDrawings.splice(selectedDrawingIndex, 1)
+    setDrawings([...nextDrawings, selectedDrawing])
+
+    setOpenItemMenu({ open: false, x: null, y: null })
+  }
+
+  const handleClickSendBackwardButton = () => {
+    if (drawings.length === 0) return
+
+    const nextDrawings = [...drawings]
+    nextDrawings.splice(selectedDrawingIndex, 1)
+    setDrawings([selectedDrawing, ...nextDrawings])
+
+    setOpenItemMenu({ open: false, x: null, y: null })
+  }
+
   return (
     <>
       <div
@@ -414,7 +460,7 @@ const Handler = () => {
       </div>
       {openItemMenu.open && (
         <div
-          className="absolute flex items-center gap-4 p-3 text-white bg-gray-600 rounded-lg"
+          className="absolute flex items-center gap-2.5 p-3 text-white bg-gray-600 rounded-lg"
           style={{
             left: openItemMenu.x ?? undefined,
             top: openItemMenu.y ?? undefined,
@@ -426,6 +472,32 @@ const Handler = () => {
           >
             Delete
           </div>
+          <VerticalDivider />
+          <div
+            className="cursor-pointer"
+            onClick={handleClickBringToFrontButton}
+          >
+            Bring To Front
+          </div>
+          <VerticalDivider />
+          <div className="cursor-pointer" onClick={handleClickSendToBackButton}>
+            Send To Back
+          </div>
+          <VerticalDivider />
+          <div
+            className="cursor-pointer"
+            onClick={handleClickBringForwardButton}
+          >
+            Bring Forward
+          </div>
+          <VerticalDivider />
+          <div
+            className="cursor-pointer"
+            onClick={handleClickSendBackwardButton}
+          >
+            Send Backward
+          </div>
+          <VerticalDivider />
           <div className="cursor-pointer" onClick={closeItemMenu}>
             <IoCloseCircleOutline size={24} />
           </div>

@@ -362,7 +362,7 @@ export default function Home() {
             isDragged.current = false
           }}
           onKeyDown={handleKeyDown}
-          className="absolute top-0 left-0"
+          className="absolute top-0 left-0 cursor-pencil"
         >
           <path
             d={spline.reduce(

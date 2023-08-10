@@ -9,6 +9,7 @@ module.exports = {
     extend: {
       cursor: {
         rotate: 'url(/image/cursor/rotate.svg) 12 12, auto',
+        pencil: 'url(/image/cursor/pencil.png) 0 18, auto',
       },
       fontFamily: {
         montserrat: ['Montserrat', 'sans-serif'],
