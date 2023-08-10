@@ -9,6 +9,7 @@ import { useRecoilState, useRecoilValue } from 'recoil'
 import { IoCloseCircleOutline } from 'react-icons/io5'
 import { remap } from '@/utils/remap'
 import { rotateVertex } from '@/utils/rotateVertex'
+import VerticalDivider from '../common/VerticalDivider'
 
 const defaultPoint = {
   startX: undefined,
@@ -459,7 +460,7 @@ const Handler = () => {
       </div>
       {openItemMenu.open && (
         <div
-          className="absolute flex items-center gap-4 p-3 text-white bg-gray-600 rounded-lg"
+          className="absolute flex items-center gap-2.5 p-3 text-white bg-gray-600 rounded-lg"
           style={{
             left: openItemMenu.x ?? undefined,
             top: openItemMenu.y ?? undefined,
@@ -471,28 +472,32 @@ const Handler = () => {
           >
             Delete
           </div>
+          <VerticalDivider />
           <div
             className="cursor-pointer"
             onClick={handleClickBringToFrontButton}
           >
             Bring To Front
           </div>
+          <VerticalDivider />
           <div className="cursor-pointer" onClick={handleClickSendToBackButton}>
             Send To Back
           </div>
+          <VerticalDivider />
           <div
             className="cursor-pointer"
             onClick={handleClickBringForwardButton}
           >
             Bring Forward
           </div>
+          <VerticalDivider />
           <div
             className="cursor-pointer"
             onClick={handleClickSendBackwardButton}
           >
             Send Backward
           </div>
-
+          <VerticalDivider />
           <div className="cursor-pointer" onClick={closeItemMenu}>
             <IoCloseCircleOutline size={24} />
           </div>

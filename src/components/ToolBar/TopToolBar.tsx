@@ -13,6 +13,7 @@ import {
 import { OptionsToolBar } from '@/types/type'
 import { ChromePicker, ColorResult } from 'react-color'
 import Slider from '@/components/Slider/Slider'
+import VerticalDivider from '../common/VerticalDivider'
 
 const ColorSubToolBar = ({ type }: { type: 'fill' | 'stroke' }) => {
   // recoil
@@ -148,7 +149,7 @@ export default function TopToolBar() {
   return (
     <div
       ref={toolBarRef}
-      className="fixed z-10 flex items-center overflow-visible text-white bg-gray-600 rounded-lg min-w-max left-4 top-4 min-h-fit"
+      className="fixed z-10 flex items-center overflow-visible text-white bg-gray-600 rounded-lg min-w-max left-4 top-4 min-h-fit gap-0.5"
     >
       <div className="relative flex items-center justify-center p-3 w-fit">
         <button
@@ -164,6 +165,7 @@ export default function TopToolBar() {
         </button>
         {openSubToolBar.type === 'FILL' && <ColorSubToolBar type="fill" />}
       </div>
+      <VerticalDivider />
       <div className="relative flex items-center justify-center p-3 w-fit">
         <button
           type="button"
@@ -187,6 +189,7 @@ export default function TopToolBar() {
         </button>
         {openSubToolBar.type === 'STROKE' && <ColorSubToolBar type="stroke" />}
       </div>
+      <VerticalDivider />
       <div className="relative flex items-center justify-center w-32 p-3">
         <button
           type="button"
@@ -206,7 +209,8 @@ export default function TopToolBar() {
           </div>
         )}
       </div>
-      <div className="relative flex items-center justify-center w-32 p-3">
+      <VerticalDivider />
+      <div className="relative flex items-center justify-center  p-3">
         <button
           type="button"
           className="flex items-center space-x-2 min-w-fit"
