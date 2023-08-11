@@ -52,7 +52,7 @@ export default function Home() {
   const [, setSelectedDrawingId] = useRecoilState(selectedDrawingIdAtom)
   const [drawings, setDrawings] = useRecoilState(drawingsAtom)
   const selectedDrawing = useRecoilValue(selectedDrawingState)
-  console.log(selectedDrawing)
+
   //useState
   const [point, setPoint] = useState<Point>(defaultPoint)
   const [vertexs, setVertexs] = useState<
