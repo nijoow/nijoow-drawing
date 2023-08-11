@@ -52,7 +52,7 @@ export default function Home() {
   const [, setSelectedDrawingId] = useRecoilState(selectedDrawingIdAtom)
   const [drawings, setDrawings] = useRecoilState(drawingsAtom)
   const selectedDrawing = useRecoilValue(selectedDrawingState)
-
+  console.log(selectedDrawing)
   //useState
   const [point, setPoint] = useState<Point>(defaultPoint)
   const [vertexs, setVertexs] = useState<
@@ -125,10 +125,11 @@ export default function Home() {
         TRIANGLE: 'POLYGON',
         ELLIPSE: 'ELLIPSE',
       }
+      const newId = uuid()
       setDrawings([
         ...drawings,
         {
-          id: uuid(),
+          id: newId,
           type: drawingType[mode.subType],
           subType: null,
           center: { x: centerX, y: centerY },
@@ -142,7 +143,8 @@ export default function Home() {
           opacity: currentOptions.opacity,
         },
       ])
-      setMode({ type: 'SELECT', subType: null })
+      setMode({ type: 'SELECT', subType: 'SHAPE' })
+      setSelectedDrawingId(newId)
     }
 
     setPoint(defaultPoint)
@@ -152,14 +154,16 @@ export default function Home() {
     if (mode.type === 'VERTEX') {
       if (event.key === 'Escape') {
         setVertexs([])
-        setMode({ type: 'SELECT', subType: null })
+        setMode({ type: 'SELECT', subType: 'SHAPE' })
       }
       if (event.key === 'Enter') {
         const { width, height, center } = getInformationFromVertexs(vertexs)
+        const newId = uuid()
+
         setDrawings([
           ...drawings,
           {
-            id: uuid(),
+            id: newId,
             type: 'PATH',
             subType: null,
             vertexs: vertexs,
@@ -174,6 +178,8 @@ export default function Home() {
           },
         ])
         setVertexs([])
+        setMode({ type: 'SELECT', subType: 'SHAPE' })
+        setSelectedDrawingId(newId)
       }
     }
   }
