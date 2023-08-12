@@ -157,29 +157,7 @@ export default function Home() {
         setMode({ type: 'SELECT', subType: 'SHAPE' })
       }
       if (event.key === 'Enter') {
-        const { width, height, center } = getInformationFromVertexs(vertexs)
-        const newId = uuid()
-
-        setDrawings([
-          ...drawings,
-          {
-            id: newId,
-            type: 'PATH',
-            subType: null,
-            vertexs: vertexs,
-            width,
-            height,
-            center,
-            rotate: 0,
-            fill: currentOptions.fill,
-            stroke: currentOptions.stroke,
-            strokeWidth: currentOptions.strokeWidth,
-            opacity: currentOptions.opacity,
-          },
-        ])
-        setVertexs([])
-        setMode({ type: 'SELECT', subType: 'SHAPE' })
-        setSelectedDrawingId(newId)
+        addDrawingByVertexs('PATH')
       }
     }
   }
@@ -190,8 +168,7 @@ export default function Home() {
 
   const handleMouseDownSvg = (event: React.MouseEvent) => {
     if (event.buttons === 2) {
-      setMode({ type: 'SELECT', subType: null })
-      return
+      return setMode({ type: 'SELECT', subType: null })
     }
     setVertexs([{ x: event.clientX, y: event.clientY, id: uuid() }, ...vertexs])
   }
@@ -199,27 +176,34 @@ export default function Home() {
   const handleMouseDownVertex = (event: React.MouseEvent, index: number) => {
     event.stopPropagation()
     if (index === vertexs.length - 1) {
-      const { width, height, center } = getInformationFromVertexs(vertexs)
-      setDrawings([
-        ...drawings,
-        {
-          id: uuid(),
-          type: 'POLYGON',
-          subType: null,
-          vertexs: vertexs,
-          width,
-          height,
-          center,
-          rotate: 0,
-          fill: currentOptions.fill,
-          stroke: currentOptions.stroke,
-          strokeWidth: currentOptions.strokeWidth,
-          opacity: currentOptions.opacity,
-        },
-      ])
-      setMode({ type: 'SELECT', subType: null })
-      setVertexs([])
+      addDrawingByVertexs('POLYGON')
     }
+  }
+
+  const addDrawingByVertexs = (type: 'PATH' | 'POLYGON') => {
+    const { width, height, center } = getInformationFromVertexs(vertexs)
+    const newId = uuid()
+
+    setDrawings([
+      ...drawings,
+      {
+        id: newId,
+        type,
+        subType: null,
+        vertexs: vertexs,
+        width,
+        height,
+        center,
+        rotate: 0,
+        fill: currentOptions.fill,
+        stroke: currentOptions.stroke,
+        strokeWidth: currentOptions.strokeWidth,
+        opacity: currentOptions.opacity,
+      },
+    ])
+    setVertexs([])
+    setMode({ type: 'SELECT', subType: 'SHAPE' })
+    setSelectedDrawingId(newId)
   }
 
   return (
