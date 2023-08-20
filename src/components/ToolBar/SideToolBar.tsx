@@ -30,8 +30,35 @@ export default function SideToolBar() {
         setOpenSubToolBar({ type: null })
       }
     }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case 'v':
+        case 'ㅍ':
+          setMode({ type: 'SELECT', subType: 'SHAPE' })
+          break
+        case 'a':
+        case 'ㅁ':
+          setMode({ type: 'SELECT', subType: 'VERTEX' })
+          break
+        case 'n':
+        case 'ㅜ':
+          setMode({ type: 'PENCIL', subType: null })
+          break
+        case 'p':
+        case 'ㅔ':
+          setMode({ type: 'VERTEX', subType: null })
+          break
+        default:
+          break
+      }
+    }
     window.addEventListener('mousedown', handleMouseDown)
-    return () => window.removeEventListener('mousedown', handleMouseDown)
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      window.removeEventListener('mousedown', handleMouseDown)
+      window.removeEventListener('keydown', handleKeyDown)
+    }
   }, [])
 
   return (
