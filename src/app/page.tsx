@@ -13,7 +13,6 @@ import SideToolBar from '@/components/ToolBar/SideToolBar'
 import { Drawing, DrawingType, ModeType, Point, Vertex } from '@/types/type'
 import { v4 as uuid } from 'uuid'
 import { getHeightFromPoint, getLeftFromPoint, getTopFromPoint, getWidthFromPoint } from '@/utils/getValueFromPoint'
-import Ellipse from '@/components/Drawings/Ellipse'
 import TopToolBar from '@/components/ToolBar/TopToolBar'
 import Handler from '@/components/Handler/Handler'
 import { getInformationFromVertexs } from '@/utils/getInformationFromVertex'
@@ -89,13 +88,52 @@ export default function Home() {
           { type: 'L', x: point.startX, y: point.endY, id: uuid() },
           { type: 'L', x: point.endX, y: point.endY, id: uuid() },
           { type: 'L', x: point.endX, y: point.startY, id: uuid() },
+          { type: 'Z', x: point.startX, y: point.startY, id: uuid() },
         ],
         TRIANGLE: [
           { type: 'M', x: centerX, y: point.startY, id: uuid() },
           { type: 'L', x: point.startX, y: point.endY, id: uuid() },
           { type: 'L', x: point.endX, y: point.endY, id: uuid() },
+          { type: 'Z', x: centerX, y: point.startY, id: uuid() },
         ],
-        ELLIPSE: [],
+        ELLIPSE: [
+          { type: 'M', x: centerX, y: point.startY, id: uuid() },
+          {
+            type: 'C',
+            x1: point.startX + width / 4,
+            y1: point.startY,
+            x2: point.startX,
+            y2: point.startY + height / 4,
+            x: point.startX,
+            y: centerY,
+            id: uuid(),
+          },
+          {
+            type: 'S',
+            x2: point.startX + width / 4,
+            y2: point.endY,
+            x: centerX,
+            y: point.endY,
+            id: uuid(),
+          },
+          {
+            type: 'S',
+            x2: point.endX,
+            y2: point.endY - height / 4,
+            x: point.endX,
+            y: centerY,
+            id: uuid(),
+          },
+          {
+            type: 'S',
+            x2: point.endX - width / 4,
+            y2: point.startY,
+            x: centerX,
+            y: point.startY,
+            id: uuid(),
+          },
+          { type: 'Z', x: centerX, y: point.startY, id: uuid() },
+        ],
       }
       const drawingType: { [key: string]: DrawingType } = {
         RECTANGLE: 'POLYGON',
@@ -201,9 +239,8 @@ export default function Home() {
           switch (drawing.type) {
             case 'POLYGON':
             case 'PATH':
-              return <Path key={drawing.id} drawing={drawing} />
             case 'ELLIPSE':
-              return <Ellipse key={drawing.id} drawing={drawing} />
+              return <Path key={drawing.id} drawing={drawing} />
             case 'SPLINE':
               return <Spline key={drawing.id} drawing={drawing} />
             default:
