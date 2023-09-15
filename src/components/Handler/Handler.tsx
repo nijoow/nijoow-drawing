@@ -292,20 +292,33 @@ const Handler = () => {
       handlerRef.current.style.rotate = nextRotate + 'deg'
 
       const nextVertexs = prevRef.current.vertexs.map((vertex) => {
-        if (prevRef.current.center.x === null || prevRef.current.center.y === null) return vertex
-        else {
+        const getNextVertex = (prevX: number, prevY: number) => {
           const r = rotateAngle * (Math.PI / 180)
 
           const nextX =
-            (vertex.x - prevRef.current.center.x) * Math.cos(r) -
-            (vertex.y - prevRef.current.center.y) * Math.sin(r) +
-            prevRef.current.center.x
+            (prevX - prevRef.current.center.x!) * Math.cos(r) -
+            (prevY - prevRef.current.center.y!) * Math.sin(r) +
+            prevRef.current.center.x!
           const nextY =
-            (vertex.x - prevRef.current.center.x) * Math.sin(r) +
-            (vertex.y - prevRef.current.center.y) * Math.cos(r) +
-            prevRef.current.center.y
-          return { ...vertex, x: nextX, y: nextY }
+            (prevX - prevRef.current.center.x!) * Math.sin(r) +
+            (prevY - prevRef.current.center.y!) * Math.cos(r) +
+            prevRef.current.center.y!
+
+          return { x: nextX, y: nextY }
         }
+
+        let nextVertex = { ...vertex }
+        const { x, y } = getNextVertex(vertex.x, vertex.y)
+        nextVertex = { ...nextVertex, x, y }
+        if (vertex.x1 && vertex.y1) {
+          const { x: x1, y: y1 } = getNextVertex(vertex.x1, vertex.y1)
+          nextVertex = { ...nextVertex, x1, y1 }
+        }
+        if (vertex.x2 && vertex.y2) {
+          const { x: x2, y: y2 } = getNextVertex(vertex.x2, vertex.y2)
+          nextVertex = { ...nextVertex, x2, y2 }
+        }
+        return nextVertex
       })
 
       setDrawings((drawings) =>

@@ -4,7 +4,6 @@ import React from 'react'
 const Path = ({ drawing }: { drawing: Drawing }) => {
   const left = drawing.center.x - drawing.width / 2
   const top = drawing.center.y - drawing.height / 2
-
   return (
     <svg
       id={drawing.id}
@@ -16,7 +15,6 @@ const Path = ({ drawing }: { drawing: Drawing }) => {
       style={{
         left,
         top,
-        rotate: `${drawing.rotate}deg`,
       }}
     >
       <path
