@@ -11,7 +11,7 @@ const Path = ({ drawing }: { drawing: Drawing }) => {
       width={drawing.width}
       height={drawing.height}
       overflow={'visible'}
-      className={`absolute `}
+      className={`absolute`}
       style={{
         left,
         top,
@@ -21,13 +21,16 @@ const Path = ({ drawing }: { drawing: Drawing }) => {
       <path
         id={drawing.id}
         d={drawing.vertexs
-          .map((vertex, index) => {
-            if (index === 0) {
-              return `M${vertex.x} ${vertex.y}`
-            } else {
-              return `L${vertex.x} ${vertex.y}`
-            }
-          })
+          .map(
+            (vertex) =>
+              ({
+                M: `M ${vertex.x} ${vertex.y}`,
+                L: `L ${vertex.x} ${vertex.y}`,
+                C: `C ${vertex.x1} ${vertex.y1}, ${vertex.x2} ${vertex.y2}, ${vertex.x} ${vertex.y}`,
+                S: `S ${vertex.x2} ${vertex.y2}, ${vertex.x} ${vertex.y}`,
+                Z: `Z`,
+              }[vertex.type!]),
+          )
           .join(' ')}
         fill={drawing.fill}
         stroke={drawing.stroke}

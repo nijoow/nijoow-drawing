@@ -12,23 +12,14 @@ import {
 import SideToolBar from '@/components/ToolBar/SideToolBar'
 import { Drawing, DrawingType, ModeType, Point, Vertex } from '@/types/type'
 import { v4 as uuid } from 'uuid'
-import {
-  getHeightFromPoint,
-  getLeftFromPoint,
-  getTopFromPoint,
-  getWidthFromPoint,
-} from '@/utils/getValueFromPoint'
+import { getHeightFromPoint, getLeftFromPoint, getTopFromPoint, getWidthFromPoint } from '@/utils/getValueFromPoint'
 import Ellipse from '@/components/Drawings/Ellipse'
 import TopToolBar from '@/components/ToolBar/TopToolBar'
 import Handler from '@/components/Handler/Handler'
-import Polygon from '@/components/Drawings/Polygon'
 import { getInformationFromVertexs } from '@/utils/getInformationFromVertex'
 import Path from '@/components/Drawings/Path'
 import VertexHandler from '@/components/Handler/VertexHandler'
-import {
-  bezierCommand,
-  getSvgInformationFromPath,
-} from '@/utils/getInformationFromSplinePaths'
+import { bezierCommand, getSvgInformationFromPath } from '@/utils/getInformationFromSplinePaths'
 import Spline from '@/components/Drawings/Spline'
 
 const defaultPoint = {
@@ -38,12 +29,7 @@ const defaultPoint = {
   endY: undefined,
 }
 
-const dragBoxVisibleMode: Array<ModeType | null> = [
-  'SELECT',
-  'SHAPE',
-  'VERTEX',
-  'TEXT',
-]
+const dragBoxVisibleMode: Array<ModeType | null> = ['SELECT', 'SHAPE', 'VERTEX', 'TEXT']
 
 export default function Home() {
   //recoil
@@ -55,9 +41,7 @@ export default function Home() {
 
   //useState
   const [point, setPoint] = useState<Point>(defaultPoint)
-  const [vertexs, setVertexs] = useState<
-    { x: number; y: number; id: string }[]
-  >([])
+  const [vertexs, setVertexs] = useState<Vertex[]>([])
   const [spline, setSpline] = useState<Vertex[]>([])
 
   //useRef
@@ -94,29 +78,22 @@ export default function Home() {
     if (!isDragged.current) return
 
     isDragged.current = false
-    if (
-      mode.type === 'SHAPE' &&
-      mode.subType &&
-      point.startX &&
-      point.startY &&
-      point.endX &&
-      point.endY
-    ) {
+    if (mode.type === 'SHAPE' && mode.subType && point.startX && point.startY && point.endX && point.endY) {
       const centerX = (point.startX + point.endX) / 2
       const centerY = (point.startY + point.endY) / 2
       const width = Math.abs(point.endX - point.startX)
       const height = Math.abs(point.endY - point.startY)
       const shapeVertexs: { [key: string]: Vertex[] } = {
         RECTANGLE: [
-          { x: point.startX, y: point.startY, id: uuid() },
-          { x: point.startX, y: point.endY, id: uuid() },
-          { x: point.endX, y: point.endY, id: uuid() },
-          { x: point.endX, y: point.startY, id: uuid() },
+          { type: 'M', x: point.startX, y: point.startY, id: uuid() },
+          { type: 'L', x: point.startX, y: point.endY, id: uuid() },
+          { type: 'L', x: point.endX, y: point.endY, id: uuid() },
+          { type: 'L', x: point.endX, y: point.startY, id: uuid() },
         ],
         TRIANGLE: [
-          { x: centerX, y: point.startY, id: uuid() },
-          { x: point.startX, y: point.endY, id: uuid() },
-          { x: point.endX, y: point.endY, id: uuid() },
+          { type: 'M', x: centerX, y: point.startY, id: uuid() },
+          { type: 'L', x: point.startX, y: point.endY, id: uuid() },
+          { type: 'L', x: point.endX, y: point.endY, id: uuid() },
         ],
         ELLIPSE: [],
       }
@@ -170,12 +147,12 @@ export default function Home() {
     if (event.buttons === 2) {
       return setMode({ type: 'SELECT', subType: null })
     }
-    setVertexs([{ x: event.clientX, y: event.clientY, id: uuid() }, ...vertexs])
+    setVertexs([...vertexs, { type: vertexs.length === 0 ? 'M' : 'L', x: event.clientX, y: event.clientY, id: uuid() }])
   }
 
   const handleMouseDownVertex = (event: React.MouseEvent, index: number) => {
     event.stopPropagation()
-    if (index === vertexs.length - 1) {
+    if (index === 0) {
       addDrawingByVertexs('POLYGON')
     }
   }
@@ -190,7 +167,10 @@ export default function Home() {
         id: newId,
         type,
         subType: null,
-        vertexs: vertexs,
+        vertexs: {
+          PATH: vertexs,
+          POLYGON: [...vertexs, { type: 'Z', x: vertexs[0].x, y: vertexs[0].y, id: uuid() } as Vertex],
+        }[type],
         width,
         height,
         center,
@@ -220,7 +200,6 @@ export default function Home() {
         {drawings.map((drawing: Drawing, index: number) => {
           switch (drawing.type) {
             case 'POLYGON':
-              return <Polygon key={drawing.id} drawing={drawing} />
             case 'PATH':
               return <Path key={drawing.id} drawing={drawing} />
             case 'ELLIPSE':
@@ -257,13 +236,16 @@ export default function Home() {
           {vertexs.length > 1 && (
             <path
               d={vertexs
-                .map((vertex, index) => {
-                  if (index === 0) {
-                    return `M${vertex.x} ${vertex.y}`
-                  } else {
-                    return `L${vertex.x} ${vertex.y}`
-                  }
-                })
+                .map(
+                  (vertex, index) =>
+                    ({
+                      M: `M ${vertex.x} ${vertex.y}`,
+                      L: `L ${vertex.x} ${vertex.y}`,
+                      C: `C ${vertex.x1} ${vertex.y1}, ${vertex.x2} ${vertex.y2}, ${vertex.x} ${vertex.y}`,
+                      S: `S ${vertex.x2} ${vertex.y2}, ${vertex.x} ${vertex.y}`,
+                      Z: `Z`,
+                    }[vertex.type!]),
+                )
                 .join(' ')}
               fill={currentOptions.fill}
               stroke={currentOptions.stroke}
@@ -278,9 +260,9 @@ export default function Home() {
               d={vertexs
                 .map((vertex, index) => {
                   if (index === 0) {
-                    return `M${vertex.x} ${vertex.y}`
+                    return `M ${vertex.x} ${vertex.y}`
                   } else {
-                    return `L${vertex.x} ${vertex.y}`
+                    return `L ${vertex.x} ${vertex.y}`
                   }
                 })
                 .join(' ')}
@@ -300,11 +282,7 @@ export default function Home() {
               r="4"
               fill={'white'}
               strokeWidth={2}
-              className={`${
-                index === vertexs.length - 1
-                  ? 'stroke-red-400'
-                  : 'stroke-blue-400'
-              }`}
+              className={`${index === 0 ? 'stroke-red-400' : 'stroke-blue-400'}`}
               style={{ cursor: 'pointer' }}
               onMouseDown={(event) => handleMouseDownVertex(event, index)}
             />
@@ -319,14 +297,11 @@ export default function Home() {
           tabIndex={0}
           onMouseDown={(event) => {
             isDragged.current = true
-            setSpline([{ x: event.clientX, y: event.clientY, id: uuid() }])
+            setSpline([{ type: null, x: event.clientX, y: event.clientY, id: uuid() }])
           }}
           onMouseMove={(event) => {
             if (!isDragged.current) return
-            setSpline((spline) => [
-              ...spline,
-              { x: event.clientX, y: event.clientY, id: uuid() },
-            ])
+            setSpline((spline) => [...spline, { type: null, x: event.clientX, y: event.clientY, id: uuid() }])
           }}
           onMouseUp={(event) => {
             const { center, width, height } = getSvgInformationFromPath(spline)
@@ -356,10 +331,7 @@ export default function Home() {
         >
           <path
             d={spline.reduce(
-              (acc, point, i, a) =>
-                i === 0
-                  ? `M ${point.x},${point.y}`
-                  : `${acc} ${bezierCommand(point, i, a)}`,
+              (acc, point, i, a) => (i === 0 ? `M ${point.x},${point.y}` : `${acc} ${bezierCommand(point, i, a)}`),
               '',
             )}
             fill="none"
