@@ -1,26 +1,12 @@
 import { drawingsAtom, selectedDrawingIdAtom, selectedDrawingState } from '@/recoil/atoms'
-import { Direction, Point, ShapeData, Vertex } from '@/types/type'
+import { Direction, Vertex } from '@/types/type'
 import React, { useEffect, useRef, useState } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { IoCloseCircleOutline } from 'react-icons/io5'
 import { remap } from '@/utils/remap'
 import { rotateVertex } from '@/utils/rotateVertex'
 import VerticalDivider from '../common/VerticalDivider'
-
-const defaultPoint = {
-  startX: undefined,
-  startY: undefined,
-  endX: undefined,
-  endY: undefined,
-}
-
-const defaultPrev = {
-  width: null,
-  height: null,
-  center: { x: null, y: null },
-  rotate: null,
-  vertexs: [],
-}
+import usePointDrag from '@/hooks/usePointDrag'
 
 const rotateHandler = [
   { key: 'TL', position: '-top-9 -left-9' },
@@ -49,6 +35,9 @@ const Handler = () => {
 
   if (!selectedDrawing) return null
 
+  // custom hooks
+  const { point, isDragged, onDrag, offDrag, prevRef, setStartPoint, resetPoint, resetPrev } = usePointDrag()
+
   // useState
   const [openItemMenu, setOpenItemMenu] = useState<{
     open: boolean
@@ -57,12 +46,9 @@ const Handler = () => {
   }>({ open: false, x: null, y: null })
 
   // uesRef
-  const point = useRef<Point>(defaultPoint)
-  const isDragged = useRef(false)
   const transitionType = useRef<'TRANSLATE' | 'RESIZE' | 'ROTATE' | null>(null)
   const handlerRef = useRef<HTMLDivElement>(null)
   const directionRef = useRef<Direction>(null)
-  const prevRef = useRef<ShapeData>(defaultPrev)
 
   // useEffect
   useEffect(() => {
@@ -87,15 +73,10 @@ const Handler = () => {
   // function
   const handleMouseDown = (event: React.MouseEvent) => {
     event.stopPropagation()
-    prevRef.current = defaultPrev
 
-    isDragged.current = true
-    point.current = {
-      startX: event.clientX,
-      startY: event.clientY,
-      endX: undefined,
-      endY: undefined,
-    }
+    resetPrev()
+    onDrag()
+    setStartPoint(event)
 
     if (!handlerRef.current) return
     prevRef.current.width = handlerRef.current.offsetWidth

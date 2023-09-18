@@ -1,12 +1,9 @@
-import {
-  drawingsAtom,
-  selectedDrawingIdAtom,
-  selectedDrawingState,
-} from '@/recoil/atoms'
+import { drawingsAtom, selectedDrawingIdAtom, selectedDrawingState } from '@/recoil/atoms'
 import { Vertex } from '@/types/type'
 import React, { useEffect, useRef } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { rotateVertex } from '@/utils/rotateVertex'
+import usePointDrag from '@/hooks/usePointDrag'
 
 const VertexHandler = () => {
   // recoil
@@ -14,10 +11,12 @@ const VertexHandler = () => {
   const [, setDrawings] = useRecoilState(drawingsAtom)
   const selectedDrawing = useRecoilValue(selectedDrawingState)
 
+  // custom hooks
+  const { point, isDragged, onDrag, offDrag, prevRef, setStartPoint, resetPoint } = usePointDrag()
+
   if (!selectedDrawing) return null
 
   // uesRef
-  const isDragged = useRef(false)
   const selectedVertexRef = useRef<Vertex | null>(null)
   const handlerRef = useRef<HTMLDivElement>(null)
 
@@ -26,12 +25,8 @@ const VertexHandler = () => {
     if (!handlerRef.current) return
     handlerRef.current.style.width = `${selectedDrawing.width}px`
     handlerRef.current.style.height = `${selectedDrawing.height}px`
-    handlerRef.current.style.top = `${
-      selectedDrawing.center.y - selectedDrawing.height / 2
-    }px`
-    handlerRef.current.style.left = `${
-      selectedDrawing.center.x - selectedDrawing.width / 2
-    }px`
+    handlerRef.current.style.top = `${selectedDrawing.center.y - selectedDrawing.height / 2}px`
+    handlerRef.current.style.left = `${selectedDrawing.center.x - selectedDrawing.width / 2}px`
     handlerRef.current.style.rotate = `${selectedDrawing.rotate}deg`
   }, [selectedDrawingId])
 
@@ -48,13 +43,22 @@ const VertexHandler = () => {
   // function
   const handleMouseDown = (event: React.MouseEvent, vertex: Vertex) => {
     event.stopPropagation()
-    isDragged.current = true
     selectedVertexRef.current = vertex
+
+    prevRef.current.vertexs = selectedDrawing.vertexs
+    onDrag()
+    setStartPoint(event)
   }
 
   const handleMouseMove = (event: React.MouseEvent | MouseEvent) => {
     event.stopPropagation()
-    if (!isDragged.current || !handlerRef.current || !selectedVertexRef.current)
+    if (
+      !isDragged.current ||
+      !handlerRef.current ||
+      !selectedVertexRef.current ||
+      !point.current.startX ||
+      !point.current.startY
+    )
       return
 
     const nextVertexX = event.clientX
@@ -126,8 +130,9 @@ const VertexHandler = () => {
   const handleMouseUp = (event: React.MouseEvent | MouseEvent) => {
     event.stopPropagation()
     document.body.style.cursor = 'auto'
-    isDragged.current = false
     selectedVertexRef.current = null
+    offDrag()
+    resetPoint()
   }
 
   return (
