@@ -144,15 +144,15 @@ const Handler = () => {
                 ...drawing,
                 center: nextCenter,
                 vertexs: prevRef.current.vertexs?.map((vertex: Vertex) => {
-                  const newVertexs = { ...vertex }
+                  const newVertex = { ...vertex }
                   for (const key in vertex) {
                     if (key === 'x' || key === 'x1' || key === 'x2') {
-                      newVertexs[key] = (vertex[key] as number) + horizontalChange
+                      newVertex[key] = (vertex[key] as number) + horizontalChange
                     } else if (key === 'y' || key === 'y1' || key === 'y2') {
-                      newVertexs[key] = (vertex[key] as number) + verticalChange
+                      newVertex[key] = (vertex[key] as number) + verticalChange
                     }
                   }
-                  return newVertexs
+                  return newVertex
                 }),
               }
             : drawing,
