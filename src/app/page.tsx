@@ -88,13 +88,11 @@ export default function Home() {
           { type: 'L', x: point.startX, y: point.endY, id: uuid() },
           { type: 'L', x: point.endX, y: point.endY, id: uuid() },
           { type: 'L', x: point.endX, y: point.startY, id: uuid() },
-          { type: 'Z', x: point.startX, y: point.startY, id: uuid() },
         ],
         TRIANGLE: [
           { type: 'M', x: centerX, y: point.startY, id: uuid() },
           { type: 'L', x: point.startX, y: point.endY, id: uuid() },
           { type: 'L', x: point.endX, y: point.endY, id: uuid() },
-          { type: 'Z', x: centerX, y: point.startY, id: uuid() },
         ],
         ELLIPSE: [
           { type: 'M', x: centerX, y: point.startY, id: uuid() },
@@ -109,7 +107,9 @@ export default function Home() {
             id: uuid(),
           },
           {
-            type: 'S',
+            type: 'C',
+            x1: point.startX,
+            y1: point.endY - height / 4,
             x2: point.startX + width / 4,
             y2: point.endY,
             x: centerX,
@@ -117,7 +117,9 @@ export default function Home() {
             id: uuid(),
           },
           {
-            type: 'S',
+            type: 'C',
+            x1: point.endX - width / 4,
+            y1: point.endY,
             x2: point.endX,
             y2: point.endY - height / 4,
             x: point.endX,
@@ -125,14 +127,15 @@ export default function Home() {
             id: uuid(),
           },
           {
-            type: 'S',
+            type: 'C',
+            x1: point.endX,
+            y1: point.startY + height / 4,
             x2: point.endX - width / 4,
             y2: point.startY,
             x: centerX,
             y: point.startY,
             id: uuid(),
           },
-          { type: 'Z', x: centerX, y: point.startY, id: uuid() },
         ],
       }
       const drawingType: { [key: string]: DrawingType } = {
@@ -205,10 +208,7 @@ export default function Home() {
         id: newId,
         type,
         subType: null,
-        vertexs: {
-          PATH: vertexs,
-          POLYGON: [...vertexs, { type: 'Z', x: vertexs[0].x, y: vertexs[0].y, id: uuid() } as Vertex],
-        }[type],
+        vertexs,
         width,
         height,
         center,
@@ -272,42 +272,26 @@ export default function Home() {
         >
           {vertexs.length > 1 && (
             <path
-              d={vertexs
-                .map(
-                  (vertex, index) =>
-                    ({
-                      M: `M ${vertex.x} ${vertex.y}`,
-                      L: `L ${vertex.x} ${vertex.y}`,
-                      C: `C ${vertex.x1} ${vertex.y1}, ${vertex.x2} ${vertex.y2}, ${vertex.x} ${vertex.y}`,
-                      S: `S ${vertex.x2} ${vertex.y2}, ${vertex.x} ${vertex.y}`,
-                      Z: `Z`,
-                    }[vertex.type!]),
-                )
-                .join(' ')}
+              d={
+                vertexs
+                  .map(
+                    (vertex) =>
+                      ({
+                        M: `M ${vertex.x} ${vertex.y}`,
+                        L: `L ${vertex.x} ${vertex.y}`,
+                        C: `C ${vertex.x1} ${vertex.y1}, ${vertex.x2} ${vertex.y2}, ${vertex.x} ${vertex.y}`,
+                        S: `S ${vertex.x2} ${vertex.y2}, ${vertex.x} ${vertex.y}`,
+                      }[vertex.type!]),
+                  )
+                  .join(' ') + (selectedDrawing?.type === 'POLYGON' ? ' Z' : '')
+              }
               fill={currentOptions.fill}
               stroke={currentOptions.stroke}
               strokeWidth={currentOptions.strokeWidth}
               opacity={currentOptions.opacity}
               strokeLinejoin="round"
               strokeLinecap="round"
-            />
-          )}
-          {vertexs.length > 1 && (
-            <path
-              d={vertexs
-                .map((vertex, index) => {
-                  if (index === 0) {
-                    return `M ${vertex.x} ${vertex.y}`
-                  } else {
-                    return `L ${vertex.x} ${vertex.y}`
-                  }
-                })
-                .join(' ')}
-              className="stroke-blue-400"
-              fill="none"
-              strokeWidth={2}
-              strokeLinejoin="round"
-              strokeLinecap="round"
+              className="stroke-blue-400 stroke-4"
             />
           )}
           {vertexs.map((vertex, index) => (

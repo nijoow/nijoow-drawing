@@ -41,7 +41,7 @@ interface Center {
 export interface Vertex {
   x: number
   y: number
-  type: 'M' | 'L' | 'C' | 'S' | 'Z' | null
+  type: 'M' | 'L' | 'C' | 'S' | null
   x1?: number
   y1?: number
   x2?: number
