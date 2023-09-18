@@ -46,6 +46,9 @@ export default function Home() {
   //useRef
   const isDragged = useRef(false)
 
+  //constant
+  const vertexsLastIndex = vertexs.length - 1
+
   // useEffect
   useEffect(() => {
     if (mode.type !== 'VERTEX') {
@@ -84,54 +87,53 @@ export default function Home() {
       const height = Math.abs(point.endY - point.startY)
       const shapeVertexs: { [key: string]: Vertex[] } = {
         RECTANGLE: [
-          { type: 'M', x: point.startX, y: point.startY, id: uuid() },
+          { type: 'L', x: point.startX, y: point.startY, id: uuid() },
           { type: 'L', x: point.startX, y: point.endY, id: uuid() },
           { type: 'L', x: point.endX, y: point.endY, id: uuid() },
           { type: 'L', x: point.endX, y: point.startY, id: uuid() },
         ],
         TRIANGLE: [
-          { type: 'M', x: centerX, y: point.startY, id: uuid() },
+          { type: 'L', x: centerX, y: point.startY, id: uuid() },
           { type: 'L', x: point.startX, y: point.endY, id: uuid() },
           { type: 'L', x: point.endX, y: point.endY, id: uuid() },
         ],
         ELLIPSE: [
-          { type: 'M', x: centerX, y: point.startY, id: uuid() },
           {
             type: 'C',
-            x1: point.startX + width / 4,
-            y1: point.startY,
-            x2: point.startX,
-            y2: point.startY + height / 4,
+            currentHandlerX: point.startX,
+            currentHandlerY: point.startY + height / 4,
+            nextHandlerX: point.startX,
+            nextHandlerY: point.endY - height / 4,
             x: point.startX,
             y: centerY,
             id: uuid(),
           },
           {
             type: 'C',
-            x1: point.startX,
-            y1: point.endY - height / 4,
-            x2: point.startX + width / 4,
-            y2: point.endY,
+            currentHandlerX: point.startX + width / 4,
+            currentHandlerY: point.endY,
+            nextHandlerX: point.endX - width / 4,
+            nextHandlerY: point.endY,
             x: centerX,
             y: point.endY,
             id: uuid(),
           },
           {
             type: 'C',
-            x1: point.endX - width / 4,
-            y1: point.endY,
-            x2: point.endX,
-            y2: point.endY - height / 4,
+            currentHandlerX: point.endX,
+            currentHandlerY: point.endY - height / 4,
+            nextHandlerX: point.endX,
+            nextHandlerY: point.startY + height / 4,
             x: point.endX,
             y: centerY,
             id: uuid(),
           },
           {
             type: 'C',
-            x1: point.endX,
-            y1: point.startY + height / 4,
-            x2: point.endX - width / 4,
-            y2: point.startY,
+            currentHandlerX: point.endX - width / 4,
+            currentHandlerY: point.startY,
+            nextHandlerX: point.startX + width / 4,
+            nextHandlerY: point.startY,
             x: centerX,
             y: point.startY,
             id: uuid(),
@@ -273,17 +275,18 @@ export default function Home() {
           {vertexs.length > 1 && (
             <path
               d={
+                `M ${vertexs[vertexsLastIndex].x} ${vertexs[vertexsLastIndex].y}` +
                 vertexs
-                  .map(
-                    (vertex) =>
-                      ({
-                        M: `M ${vertex.x} ${vertex.y}`,
-                        L: `L ${vertex.x} ${vertex.y}`,
-                        C: `C ${vertex.x1} ${vertex.y1}, ${vertex.x2} ${vertex.y2}, ${vertex.x} ${vertex.y}`,
-                        S: `S ${vertex.x2} ${vertex.y2}, ${vertex.x} ${vertex.y}`,
-                      }[vertex.type!]),
-                  )
-                  .join(' ') + (selectedDrawing?.type === 'POLYGON' ? ' Z' : '')
+                  .map((vertex, index, vertexs) => {
+                    const prevVertex = index === 0 ? vertexs[vertexsLastIndex] : vertexs[index - 1]
+                    return {
+                      M: `M ${vertex.x} ${vertex.y}`,
+                      L: `L ${vertex.x} ${vertex.y}`,
+                      C: `C ${prevVertex.nextHandlerX} ${prevVertex.nextHandlerY}, ${vertex.currentHandlerX} ${vertex.currentHandlerY}, ${vertex.x} ${vertex.y}`,
+                      S: `S ${vertex.currentHandlerX} ${vertex.currentHandlerY}, ${vertex.x} ${vertex.y}`,
+                    }[vertex.type!]
+                  })
+                  .join(' ')
               }
               fill={currentOptions.fill}
               stroke={currentOptions.stroke}

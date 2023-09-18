@@ -42,10 +42,10 @@ export interface Vertex {
   x: number
   y: number
   type: 'M' | 'L' | 'C' | 'S' | null
-  x1?: number
-  y1?: number
-  x2?: number
-  y2?: number
+  nextHandlerX?: number
+  nextHandlerY?: number
+  currentHandlerX?: number
+  currentHandlerY?: number
   id: string
 }
 

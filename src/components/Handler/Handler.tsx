@@ -127,9 +127,9 @@ const Handler = () => {
                 vertexs: prevRef.current.vertexs?.map((vertex: Vertex) => {
                   const newVertex = { ...vertex }
                   for (const key in vertex) {
-                    if (key === 'x' || key === 'x1' || key === 'x2') {
+                    if (key === 'x' || key === 'currentHandlerX' || key === 'nextHandlerX') {
                       newVertex[key] = (vertex[key] as number) + horizontalChange
-                    } else if (key === 'y' || key === 'y1' || key === 'y2') {
+                    } else if (key === 'y' || key === 'currentHandlerY' || key === 'nextHandlerY') {
                       newVertex[key] = (vertex[key] as number) + verticalChange
                     }
                   }
@@ -199,13 +199,24 @@ const Handler = () => {
           let nextVertex = { ...vertex }
           const { x, y } = getNextVertex(vertex.x, vertex.y)
           nextVertex = { ...nextVertex, x: x + prevRef.current.center.x!, y: y + prevRef.current.center.y! }
-          if (vertex.x1 && vertex.y1) {
-            const { x: x1, y: y1 } = getNextVertex(vertex.x1, vertex.y1)
-            nextVertex = { ...nextVertex, x1: x1 + prevRef.current.center.x!, y1: y1 + prevRef.current.center.y! }
+          if (vertex.currentHandlerX && vertex.currentHandlerY) {
+            const { x: currentHandlerX, y: currentHandlerY } = getNextVertex(
+              vertex.currentHandlerX,
+              vertex.currentHandlerY,
+            )
+            nextVertex = {
+              ...nextVertex,
+              currentHandlerX: currentHandlerX + prevRef.current.center.x!,
+              currentHandlerY: currentHandlerY + prevRef.current.center.y!,
+            }
           }
-          if (vertex.x2 && vertex.y2) {
-            const { x: x2, y: y2 } = getNextVertex(vertex.x2, vertex.y2)
-            nextVertex = { ...nextVertex, x2: x2 + prevRef.current.center.x!, y2: y2 + prevRef.current.center.y! }
+          if (vertex.nextHandlerX && vertex.nextHandlerY) {
+            const { x: nextHandlerX, y: nextHandlerY } = getNextVertex(vertex.nextHandlerX, vertex.nextHandlerY)
+            nextVertex = {
+              ...nextVertex,
+              nextHandlerX: nextHandlerX + prevRef.current.center.x!,
+              nextHandlerY: nextHandlerY + prevRef.current.center.y!,
+            }
           }
           return nextVertex
         })
@@ -291,13 +302,24 @@ const Handler = () => {
         let nextVertex = { ...vertex }
         const { x, y } = getNextVertex(vertex.x, vertex.y)
         nextVertex = { ...nextVertex, x, y }
-        if (vertex.x1 && vertex.y1) {
-          const { x: x1, y: y1 } = getNextVertex(vertex.x1, vertex.y1)
-          nextVertex = { ...nextVertex, x1, y1 }
+        if (vertex.currentHandlerX && vertex.currentHandlerY) {
+          const { x: currentHandlerX, y: currentHandlerY } = getNextVertex(
+            vertex.currentHandlerX,
+            vertex.currentHandlerY,
+          )
+          nextVertex = {
+            ...nextVertex,
+            currentHandlerX: currentHandlerX,
+            currentHandlerY: currentHandlerY,
+          }
         }
-        if (vertex.x2 && vertex.y2) {
-          const { x: x2, y: y2 } = getNextVertex(vertex.x2, vertex.y2)
-          nextVertex = { ...nextVertex, x2, y2 }
+        if (vertex.nextHandlerX && vertex.nextHandlerY) {
+          const { x: nextHandlerX, y: nextHandlerY } = getNextVertex(vertex.nextHandlerX, vertex.nextHandlerY)
+          nextVertex = {
+            ...nextVertex,
+            nextHandlerX: nextHandlerX,
+            nextHandlerY: nextHandlerY,
+          }
         }
         return nextVertex
       })
@@ -320,8 +342,8 @@ const Handler = () => {
     event.stopPropagation()
     document.body.style.cursor = 'auto'
 
-    isDragged.current = false
-    point.current = defaultPoint
+    offDrag()
+    resetPoint()
     transitionType.current = null
   }
 
