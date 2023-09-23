@@ -24,12 +24,13 @@ const usePointDrag = () => {
 
   const offDrag = () => (isDragged.current = false)
 
-  const setStartPoint = (event: React.MouseEvent) => ({
-    startX: event.clientX,
-    startY: event.clientY,
-    endX: undefined,
-    endY: undefined,
-  })
+  const setStartPoint = (event: React.MouseEvent) =>
+    (point.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      endX: undefined,
+      endY: undefined,
+    })
 
   const resetPoint = () => (point.current = defaultPoint)
 
