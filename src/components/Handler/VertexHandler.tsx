@@ -11,13 +11,16 @@ const VertexHandler = () => {
   const [, setDrawings] = useRecoilState(drawingsAtom)
   const selectedDrawing = useRecoilValue(selectedDrawingState)
 
+  if (!selectedDrawing) return null
+
   // custom hooks
   const { point, isDragged, onDrag, offDrag, prevRef, setStartPoint, resetPoint } = usePointDrag()
 
-  if (!selectedDrawing) return null
+  // useState
+  const [selectedVertexId, setSelectedVertexId] = useState<string | null>(null)
 
   // uesRef
-  const [selectedVertexId, setSelectedVertexId] = useState<string | null>(null)
+  const targetHandlerRef = useRef<'VERTEX' | 'CURRENT' | 'NEXT' | null>(null)
 
   //constant
   const lastIndex = selectedDrawing.vertexs.length - 1
@@ -38,7 +41,6 @@ const VertexHandler = () => {
   const handleMouseDown = (event: React.MouseEvent, vertex: Vertex) => {
     event.stopPropagation()
     setSelectedVertexId(vertex.id)
-
     prevRef.current.vertexs = selectedDrawing.vertexs
     onDrag()
     setStartPoint(event)
@@ -50,16 +52,29 @@ const VertexHandler = () => {
 
     const horizontalChange = event.clientX - point.current.startX
     const verticalChange = event.clientY - point.current.startY
+
     const nextVertexs = prevRef.current.vertexs.map((vertex, index) => {
       if (vertex.id !== selectedVertexId) return vertex
 
       const newVertex = { ...vertex }
-      for (const key in vertex) {
-        if (key === 'x' || key === 'currentHandlerX' || key === 'nextHandlerX') {
-          newVertex[key] = (vertex[key] as number) + horizontalChange
-        } else if (key === 'y' || key === 'currentHandlerY' || key === 'nextHandlerY') {
-          newVertex[key] = (vertex[key] as number) + verticalChange
-        }
+      switch (targetHandlerRef.current) {
+        case 'VERTEX':
+          for (const key in vertex) {
+            if (key === 'x' || key === 'currentHandlerX' || key === 'nextHandlerX') {
+              newVertex[key] = (vertex[key] as number) + horizontalChange
+            } else if (key === 'y' || key === 'currentHandlerY' || key === 'nextHandlerY') {
+              newVertex[key] = (vertex[key] as number) + verticalChange
+            }
+          }
+          break
+        case 'CURRENT':
+          newVertex.currentHandlerX = (vertex.currentHandlerX as number) + horizontalChange
+          newVertex.currentHandlerY = (vertex.currentHandlerY as number) + verticalChange
+          break
+        case 'NEXT':
+          newVertex.nextHandlerX = (vertex.nextHandlerX as number) + horizontalChange
+          newVertex.nextHandlerY = (vertex.nextHandlerY as number) + verticalChange
+          break
       }
       return newVertex
     })
@@ -176,6 +191,10 @@ const VertexHandler = () => {
               fill={'white'}
               strokeWidth={2}
               className={`stroke-red-400 cursor-pointer`}
+              onMouseDown={(event) => {
+                targetHandlerRef.current = 'CURRENT'
+                handleMouseDown(event, selectedVertex)
+              }}
             />
             <circle
               id={selectedVertex.id}
@@ -185,6 +204,10 @@ const VertexHandler = () => {
               fill={'white'}
               strokeWidth={2}
               className={`stroke-red-400 cursor-pointer`}
+              onMouseDown={(event) => {
+                targetHandlerRef.current = 'NEXT'
+                handleMouseDown(event, selectedVertex)
+              }}
             />
           </>
         )}
@@ -199,7 +222,10 @@ const VertexHandler = () => {
               fill={'white'}
               strokeWidth={2}
               className={`cursor-pointer stroke-blue-400`}
-              onMouseDown={(event) => handleMouseDown(event, vertex)}
+              onMouseDown={(event) => {
+                targetHandlerRef.current = 'VERTEX'
+                handleMouseDown(event, vertex)
+              }}
             />
           ))}
       </svg>
