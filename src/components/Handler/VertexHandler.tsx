@@ -175,8 +175,7 @@ const VertexHandler = () => {
               r="4"
               fill={'white'}
               strokeWidth={2}
-              className={`stroke-red-400`}
-              style={{ cursor: 'pointer' }}
+              className={`stroke-red-400 cursor-pointer`}
             />
             <circle
               id={selectedVertex.id}
@@ -185,8 +184,7 @@ const VertexHandler = () => {
               r="4"
               fill={'white'}
               strokeWidth={2}
-              className={`stroke-red-400`}
-              style={{ cursor: 'pointer' }}
+              className={`stroke-red-400 cursor-pointer`}
             />
           </>
         )}
@@ -200,8 +198,7 @@ const VertexHandler = () => {
               r="4"
               fill={'white'}
               strokeWidth={2}
-              className={`${index === 0 ? 'stroke-red-400' : 'stroke-blue-400'}`}
-              style={{ cursor: 'pointer' }}
+              className={`cursor-pointer stroke-blue-400`}
               onMouseDown={(event) => handleMouseDown(event, vertex)}
             />
           ))}
