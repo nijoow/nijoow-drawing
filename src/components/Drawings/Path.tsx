@@ -23,7 +23,7 @@ const Path = ({ drawing }: { drawing: Drawing }) => {
       <path
         id={drawing.id}
         d={
-          `M ${drawing.vertexs[lastIndex].x} ${drawing.vertexs[lastIndex].y}` +
+          `M ${drawing.vertexs[lastIndex].x} ${drawing.vertexs[lastIndex].y} ` +
           drawing.vertexs
             .map((vertex, index, vertexs) => {
               const prevVertex = index === 0 ? vertexs[lastIndex] : vertexs[index - 1]

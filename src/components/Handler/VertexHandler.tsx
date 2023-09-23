@@ -1,6 +1,6 @@
 import { drawingsAtom, selectedDrawingIdAtom, selectedDrawingState } from '@/recoil/atoms'
 import { Vertex } from '@/types/type'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { rotateVertex } from '@/utils/rotateVertex'
 import usePointDrag from '@/hooks/usePointDrag'
@@ -17,19 +17,13 @@ const VertexHandler = () => {
   if (!selectedDrawing) return null
 
   // uesRef
-  const selectedVertexRef = useRef<Vertex | null>(null)
-  const handlerRef = useRef<HTMLDivElement>(null)
+  const [selectedVertexId, setSelectedVertexId] = useState<string | null>(null)
+
+  //constant
+  const lastIndex = selectedDrawing.vertexs.length - 1
+  const selectedVertex = selectedDrawing.vertexs.find((vertex) => vertex.id === selectedVertexId)
 
   // useEffect
-  useEffect(() => {
-    if (!handlerRef.current) return
-    handlerRef.current.style.width = `${selectedDrawing.width}px`
-    handlerRef.current.style.height = `${selectedDrawing.height}px`
-    handlerRef.current.style.top = `${selectedDrawing.center.y - selectedDrawing.height / 2}px`
-    handlerRef.current.style.left = `${selectedDrawing.center.x - selectedDrawing.width / 2}px`
-    handlerRef.current.style.rotate = `${selectedDrawing.rotate}deg`
-  }, [selectedDrawingId])
-
   useEffect(() => {
     window.addEventListener('mousemove', handleMouseMove)
     window.addEventListener('mouseup', handleMouseUp)
@@ -43,7 +37,7 @@ const VertexHandler = () => {
   // function
   const handleMouseDown = (event: React.MouseEvent, vertex: Vertex) => {
     event.stopPropagation()
-    selectedVertexRef.current = vertex
+    setSelectedVertexId(vertex.id)
 
     prevRef.current.vertexs = selectedDrawing.vertexs
     onDrag()
@@ -52,19 +46,12 @@ const VertexHandler = () => {
 
   const handleMouseMove = (event: React.MouseEvent | MouseEvent) => {
     event.stopPropagation()
-    if (
-      !isDragged.current ||
-      !handlerRef.current ||
-      !selectedVertexRef.current ||
-      !point.current.startX ||
-      !point.current.startY
-    )
-      return
+    if (!isDragged.current || !point.current.startX || !point.current.startY) return
 
     const horizontalChange = event.clientX - point.current.startX
     const verticalChange = event.clientY - point.current.startY
     const nextVertexs = prevRef.current.vertexs.map((vertex, index) => {
-      if (vertex.id !== selectedVertexRef.current?.id) return vertex
+      if (vertex.id !== selectedVertexId) return vertex
 
       const newVertex = { ...vertex }
       for (const key in vertex) {
@@ -79,7 +66,6 @@ const VertexHandler = () => {
 
     const rotatedVertexMinMax = nextVertexs.reduce(
       (acc, vertex) => {
-        if (handlerRef.current === null) return acc
         const rotatedVertex = rotateVertex(
           vertex.x,
           vertex.y,
@@ -111,11 +97,6 @@ const VertexHandler = () => {
     const nextWidth = Math.abs(rotatedVertexMinMax.maxX - rotatedVertexMinMax.minX)
     const nextHeight = Math.abs(rotatedVertexMinMax.maxY - rotatedVertexMinMax.minY)
 
-    handlerRef.current.style.width = nextWidth + 'px'
-    handlerRef.current.style.height = nextHeight + 'px'
-    handlerRef.current.style.left = nextCenterX - nextWidth / 2 + 'px'
-    handlerRef.current.style.top = nextCenterY - nextHeight / 2 + 'px'
-
     setDrawings((drawings) =>
       drawings.map((drawing) =>
         drawing.id === selectedDrawingId
@@ -134,14 +115,12 @@ const VertexHandler = () => {
   const handleMouseUp = (event: React.MouseEvent | MouseEvent) => {
     event.stopPropagation()
     document.body.style.cursor = 'auto'
-    selectedVertexRef.current = null
     offDrag()
     resetPoint()
   }
 
   return (
     <>
-      <div ref={handlerRef} className="absolute border-2 border-blue-400 cursor-move pointer-events-auto" />
       <svg
         viewBox={`0 0 ${window.innerWidth} ${window.innerHeight}`}
         width={window.innerWidth}
@@ -152,6 +131,7 @@ const VertexHandler = () => {
         {selectedDrawing.vertexs.length > 1 && (
           <path
             d={
+              `M ${selectedDrawing.vertexs[lastIndex].x} ${selectedDrawing.vertexs[lastIndex].y}` +
               selectedDrawing.vertexs
                 .map((vertex, index, vertexs) => {
                   const prevVertex = index === 0 ? selectedDrawing.vertexs[vertexs.length - 1] : vertexs[index - 1]
@@ -162,7 +142,8 @@ const VertexHandler = () => {
                     S: `S ${vertex.currentHandlerX} ${vertex.currentHandlerY}, ${vertex.x} ${vertex.y}`,
                   }[vertex.type!]
                 })
-                .join(' ') + (selectedDrawing.type === 'POLYGON' ? ' Z' : '')
+                .join(' ') +
+              (selectedDrawing.type === 'POLYGON' ? ' Z' : '')
             }
             className="stroke-blue-400"
             fill="none"
@@ -170,48 +151,45 @@ const VertexHandler = () => {
             strokeLinejoin="round"
           />
         )}
-        {selectedDrawing.vertexs.map((vertex, index) => {
-          return (
-            <div key={vertex.id}>
-              <path
-                d={`M ${vertex.x} ${vertex.y} L${vertex.currentHandlerX} ${vertex.currentHandlerY}`}
-                className="stroke-blue-400"
-                fill="none"
-                strokeWidth={2}
-                strokeLinejoin="round"
-              />
-              <path
-                d={`M ${vertex.x} ${vertex.y} L${vertex.nextHandlerX} ${vertex.nextHandlerY}`}
-                className="stroke-blue-400"
-                fill="none"
-                strokeWidth={2}
-                strokeLinejoin="round"
-              />
-              <circle
-                key={vertex.id}
-                id={vertex.id}
-                cx={vertex.currentHandlerX}
-                cy={vertex.currentHandlerY}
-                r="4"
-                fill={'white'}
-                strokeWidth={2}
-                className={`stroke-red-400`}
-                style={{ cursor: 'pointer' }}
-              />
-              <circle
-                key={vertex.id}
-                id={vertex.id}
-                cx={vertex.nextHandlerX}
-                cy={vertex.nextHandlerY}
-                r="4"
-                fill={'white'}
-                strokeWidth={2}
-                className={`stroke-red-400`}
-                style={{ cursor: 'pointer' }}
-              />
-            </div>
-          )
-        })}
+
+        {selectedVertex?.type === 'C' && (
+          <>
+            <path
+              d={`M ${selectedVertex.x} ${selectedVertex.y} L ${selectedVertex.currentHandlerX} ${selectedVertex.currentHandlerY}`}
+              className="stroke-blue-400"
+              fill="none"
+              strokeWidth={2}
+              strokeLinejoin="round"
+            />
+            <path
+              d={`M ${selectedVertex.x} ${selectedVertex.y} L ${selectedVertex.nextHandlerX} ${selectedVertex.nextHandlerY}`}
+              className="stroke-blue-400"
+              fill="none"
+              strokeWidth={2}
+              strokeLinejoin="round"
+            />
+            <circle
+              id={selectedVertex.id}
+              cx={selectedVertex.currentHandlerX}
+              cy={selectedVertex.currentHandlerY}
+              r="4"
+              fill={'white'}
+              strokeWidth={2}
+              className={`stroke-red-400`}
+              style={{ cursor: 'pointer' }}
+            />
+            <circle
+              id={selectedVertex.id}
+              cx={selectedVertex.nextHandlerX}
+              cy={selectedVertex.nextHandlerY}
+              r="4"
+              fill={'white'}
+              strokeWidth={2}
+              className={`stroke-red-400`}
+              style={{ cursor: 'pointer' }}
+            />
+          </>
+        )}
         {selectedDrawing.type !== 'SPLINE' &&
           selectedDrawing.vertexs.map((vertex: Vertex, index: number) => (
             <circle
