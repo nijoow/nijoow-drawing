@@ -172,7 +172,7 @@ const VertexHandler = () => {
         )}
         {selectedDrawing.vertexs.map((vertex, index) => {
           return (
-            <>
+            <div key={vertex.id}>
               <path
                 d={`M ${vertex.x} ${vertex.y} L${vertex.currentHandlerX} ${vertex.currentHandlerY}`}
                 className="stroke-blue-400"
@@ -209,7 +209,7 @@ const VertexHandler = () => {
                 className={`stroke-red-400`}
                 style={{ cursor: 'pointer' }}
               />
-            </>
+            </div>
           )
         })}
         {selectedDrawing.type !== 'SPLINE' &&
