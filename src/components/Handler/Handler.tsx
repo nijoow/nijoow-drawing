@@ -1,30 +1,12 @@
-import {
-  drawingsAtom,
-  selectedDrawingIdAtom,
-  selectedDrawingState,
-} from '@/recoil/atoms'
-import { Direction, Point, ShapeData, Vertex } from '@/types/type'
+import { drawingsAtom, selectedDrawingIdAtom, selectedDrawingState } from '@/recoil/atoms'
+import { Direction, Vertex } from '@/types/type'
 import React, { useEffect, useRef, useState } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { IoCloseCircleOutline } from 'react-icons/io5'
 import { remap } from '@/utils/remap'
 import { rotateVertex } from '@/utils/rotateVertex'
 import VerticalDivider from '../common/VerticalDivider'
-
-const defaultPoint = {
-  startX: undefined,
-  startY: undefined,
-  endX: undefined,
-  endY: undefined,
-}
-
-const defaultPrev = {
-  width: null,
-  height: null,
-  center: { x: null, y: null },
-  rotate: null,
-  vertexs: [],
-}
+import usePointDrag from '@/hooks/usePointDrag'
 
 const rotateHandler = [
   { key: 'TL', position: '-top-9 -left-9' },
@@ -49,11 +31,12 @@ const Handler = () => {
   const [selectedDrawingId] = useRecoilState(selectedDrawingIdAtom)
   const [drawings, setDrawings] = useRecoilState(drawingsAtom)
   const selectedDrawing = useRecoilValue(selectedDrawingState)
-  const selectedDrawingIndex = drawings.findIndex(
-    (drawing) => drawing.id === selectedDrawingId,
-  )
+  const selectedDrawingIndex = drawings.findIndex((drawing) => drawing.id === selectedDrawingId)
 
   if (!selectedDrawing) return null
+
+  // custom hooks
+  const { point, isDragged, onDrag, offDrag, prevRef, setStartPoint, resetPoint, resetPrev } = usePointDrag()
 
   // useState
   const [openItemMenu, setOpenItemMenu] = useState<{
@@ -63,24 +46,17 @@ const Handler = () => {
   }>({ open: false, x: null, y: null })
 
   // uesRef
-  const point = useRef<Point>(defaultPoint)
-  const isDragged = useRef(false)
   const transitionType = useRef<'TRANSLATE' | 'RESIZE' | 'ROTATE' | null>(null)
   const handlerRef = useRef<HTMLDivElement>(null)
   const directionRef = useRef<Direction>(null)
-  const prevRef = useRef<ShapeData>(defaultPrev)
 
   // useEffect
   useEffect(() => {
     if (!handlerRef.current) return
     handlerRef.current.style.width = `${selectedDrawing.width}px`
     handlerRef.current.style.height = `${selectedDrawing.height}px`
-    handlerRef.current.style.top = `${
-      selectedDrawing.center.y - selectedDrawing.height / 2
-    }px`
-    handlerRef.current.style.left = `${
-      selectedDrawing.center.x - selectedDrawing.width / 2
-    }px`
+    handlerRef.current.style.top = `${selectedDrawing.center.y - selectedDrawing.height / 2}px`
+    handlerRef.current.style.left = `${selectedDrawing.center.x - selectedDrawing.width / 2}px`
     handlerRef.current.style.rotate = `${selectedDrawing.rotate}deg`
   }, [selectedDrawingId])
 
@@ -97,23 +73,16 @@ const Handler = () => {
   // function
   const handleMouseDown = (event: React.MouseEvent) => {
     event.stopPropagation()
-    prevRef.current = defaultPrev
 
-    isDragged.current = true
-    point.current = {
-      startX: event.clientX,
-      startY: event.clientY,
-      endX: undefined,
-      endY: undefined,
-    }
+    resetPrev()
+    onDrag()
+    setStartPoint(event)
 
     if (!handlerRef.current) return
     prevRef.current.width = handlerRef.current.offsetWidth
     prevRef.current.height = handlerRef.current.offsetHeight
-    prevRef.current.center.x =
-      handlerRef.current.offsetLeft + prevRef.current.width / 2
-    prevRef.current.center.y =
-      handlerRef.current.offsetTop + prevRef.current.height / 2
+    prevRef.current.center.x = handlerRef.current.offsetLeft + prevRef.current.width / 2
+    prevRef.current.center.y = handlerRef.current.offsetTop + prevRef.current.height / 2
     prevRef.current.rotate = selectedDrawing.rotate
     prevRef.current.vertexs = selectedDrawing.vertexs
   }
@@ -155,12 +124,17 @@ const Handler = () => {
             ? {
                 ...drawing,
                 center: nextCenter,
-                vertexs:
-                  prevRef.current.vertexs?.map((vertex: Vertex) => ({
-                    ...vertex,
-                    x: vertex.x + horizontalChange,
-                    y: vertex.y + verticalChange,
-                  })) || [],
+                vertexs: prevRef.current.vertexs?.map((vertex: Vertex) => {
+                  const newVertex = { ...vertex }
+                  for (const key in vertex) {
+                    if (key === 'x' || key === 'currentHandlerX' || key === 'nextHandlerX') {
+                      newVertex[key] = (vertex[key] as number) + horizontalChange
+                    } else if (key === 'y' || key === 'currentHandlerY' || key === 'nextHandlerY') {
+                      newVertex[key] = (vertex[key] as number) + verticalChange
+                    }
+                  }
+                  return newVertex
+                }),
               }
             : drawing,
         ),
@@ -184,21 +158,12 @@ const Handler = () => {
       )
 
       const resize = (deltaX: number, deltaY: number) => {
-        if (
-          handlerRef.current === null ||
-          prevRef.current.width === null ||
-          prevRef.current.height === null
-        )
-          return
+        if (handlerRef.current === null || prevRef.current.width === null || prevRef.current.height === null) return
         const nextCenterX =
-          (handlerRef.current.getBoundingClientRect().left +
-            handlerRef.current.getBoundingClientRect().right) /
-          2
+          (handlerRef.current.getBoundingClientRect().left + handlerRef.current.getBoundingClientRect().right) / 2
 
         const nextCenterY =
-          (handlerRef.current.getBoundingClientRect().top +
-            handlerRef.current.getBoundingClientRect().bottom) /
-          2
+          (handlerRef.current.getBoundingClientRect().top + handlerRef.current.getBoundingClientRect().bottom) / 2
 
         const width = prevRef.current.width + deltaX
         const height = prevRef.current.height + deltaY
@@ -207,42 +172,53 @@ const Handler = () => {
         const nextHeight = Math.abs(height)
 
         const nextVertexs = prevRef.current.vertexs?.map((vertex) => {
-          if (
-            prevRef.current.width &&
-            prevRef.current.height &&
-            prevRef.current.center.x &&
-            prevRef.current.center.y &&
-            prevRef.current.rotate !== null
-          ) {
+          const getNextVertex = (prevX: number, prevY: number) => {
             const rotatedVertex = rotateVertex(
-              vertex.x,
-              vertex.y,
-              prevRef.current.center.x,
-              prevRef.current.center.y,
-              -prevRef.current.rotate,
+              prevX,
+              prevY,
+              prevRef.current.center.x!,
+              prevRef.current.center.y!,
+              -prevRef.current.rotate!,
             )
-            const x = remap(
+            const nextX = remap(
               rotatedVertex.x,
-              -prevRef.current.width / 2,
-              prevRef.current.width / 2,
+              -prevRef.current.width! / 2,
+              prevRef.current.width! / 2,
               -width / 2,
               width / 2,
             )
-            const y = remap(
+            const nextY = remap(
               rotatedVertex.y,
-              -prevRef.current.height / 2,
-              prevRef.current.height / 2,
+              -prevRef.current.height! / 2,
+              prevRef.current.height! / 2,
               -height / 2,
               height / 2,
             )
-            const nextVertex = rotateVertex(x, y, 0, 0, prevRef.current.rotate)
-
-            return {
-              ...vertex,
-              x: nextVertex.x + prevRef.current.center.x,
-              y: nextVertex.y + prevRef.current.center.y,
+            return rotateVertex(nextX, nextY, 0, 0, prevRef.current.rotate!)
+          }
+          let nextVertex = { ...vertex }
+          const { x, y } = getNextVertex(vertex.x, vertex.y)
+          nextVertex = { ...nextVertex, x: x + prevRef.current.center.x!, y: y + prevRef.current.center.y! }
+          if (vertex.currentHandlerX && vertex.currentHandlerY) {
+            const { x: currentHandlerX, y: currentHandlerY } = getNextVertex(
+              vertex.currentHandlerX,
+              vertex.currentHandlerY,
+            )
+            nextVertex = {
+              ...nextVertex,
+              currentHandlerX: currentHandlerX + prevRef.current.center.x!,
+              currentHandlerY: currentHandlerY + prevRef.current.center.y!,
             }
-          } else return vertex
+          }
+          if (vertex.nextHandlerX && vertex.nextHandlerY) {
+            const { x: nextHandlerX, y: nextHandlerY } = getNextVertex(vertex.nextHandlerX, vertex.nextHandlerY)
+            nextVertex = {
+              ...nextVertex,
+              nextHandlerX: nextHandlerX + prevRef.current.center.x!,
+              nextHandlerY: nextHandlerY + prevRef.current.center.y!,
+            }
+          }
+          return nextVertex
         })
 
         handlerRef.current.style.width = nextWidth + 'px'
@@ -295,47 +271,57 @@ const Handler = () => {
         default:
           break
       }
-    } else if (
-      transitionType.current === 'ROTATE' &&
-      prevRef.current.rotate !== null
-    ) {
+    } else if (transitionType.current === 'ROTATE' && prevRef.current.rotate !== null) {
       document.body.style.cursor = 'url(/image/cursor/rotate.svg) 12 12, auto'
       const initialAngle =
-        Math.atan2(
-          point.current.startX - prevRef.current.center.x,
-          point.current.startY - prevRef.current.center.y,
-        ) *
+        Math.atan2(point.current.startX - prevRef.current.center.x, point.current.startY - prevRef.current.center.y) *
         (180 / Math.PI)
       const finalAngle =
-        Math.atan2(
-          event.clientX - prevRef.current.center.x,
-          event.clientY - prevRef.current.center.y,
-        ) *
-        (180 / Math.PI)
+        Math.atan2(event.clientX - prevRef.current.center.x, event.clientY - prevRef.current.center.y) * (180 / Math.PI)
 
       const rotateAngle = initialAngle - finalAngle
       const nextRotate = prevRef.current.rotate + rotateAngle
       handlerRef.current.style.rotate = nextRotate + 'deg'
 
       const nextVertexs = prevRef.current.vertexs.map((vertex) => {
-        if (
-          prevRef.current.center.x === null ||
-          prevRef.current.center.y === null
-        )
-          return vertex
-        else {
+        const getNextVertex = (prevX: number, prevY: number) => {
           const r = rotateAngle * (Math.PI / 180)
 
           const nextX =
-            (vertex.x - prevRef.current.center.x) * Math.cos(r) -
-            (vertex.y - prevRef.current.center.y) * Math.sin(r) +
-            prevRef.current.center.x
+            (prevX - prevRef.current.center.x!) * Math.cos(r) -
+            (prevY - prevRef.current.center.y!) * Math.sin(r) +
+            prevRef.current.center.x!
           const nextY =
-            (vertex.x - prevRef.current.center.x) * Math.sin(r) +
-            (vertex.y - prevRef.current.center.y) * Math.cos(r) +
-            prevRef.current.center.y
-          return { ...vertex, x: nextX, y: nextY }
+            (prevX - prevRef.current.center.x!) * Math.sin(r) +
+            (prevY - prevRef.current.center.y!) * Math.cos(r) +
+            prevRef.current.center.y!
+
+          return { x: nextX, y: nextY }
         }
+
+        let nextVertex = { ...vertex }
+        const { x, y } = getNextVertex(vertex.x, vertex.y)
+        nextVertex = { ...nextVertex, x, y }
+        if (vertex.currentHandlerX && vertex.currentHandlerY) {
+          const { x: currentHandlerX, y: currentHandlerY } = getNextVertex(
+            vertex.currentHandlerX,
+            vertex.currentHandlerY,
+          )
+          nextVertex = {
+            ...nextVertex,
+            currentHandlerX: currentHandlerX,
+            currentHandlerY: currentHandlerY,
+          }
+        }
+        if (vertex.nextHandlerX && vertex.nextHandlerY) {
+          const { x: nextHandlerX, y: nextHandlerY } = getNextVertex(vertex.nextHandlerX, vertex.nextHandlerY)
+          nextVertex = {
+            ...nextVertex,
+            nextHandlerX: nextHandlerX,
+            nextHandlerY: nextHandlerY,
+          }
+        }
+        return nextVertex
       })
 
       setDrawings((drawings) =>
@@ -356,8 +342,8 @@ const Handler = () => {
     event.stopPropagation()
     document.body.style.cursor = 'auto'
 
-    isDragged.current = false
-    point.current = defaultPoint
+    offDrag()
+    resetPoint()
     transitionType.current = null
   }
 
@@ -371,9 +357,7 @@ const Handler = () => {
   }
 
   const handleClickDeleteDrawingButton = () => {
-    setDrawings((drawings) =>
-      drawings.filter((drawing) => drawing.id !== selectedDrawingId),
-    )
+    setDrawings((drawings) => drawings.filter((drawing) => drawing.id !== selectedDrawingId))
     setOpenItemMenu({ open: false, x: null, y: null })
   }
 
@@ -466,17 +450,11 @@ const Handler = () => {
             top: openItemMenu.y ?? undefined,
           }}
         >
-          <div
-            className="cursor-pointer"
-            onClick={handleClickDeleteDrawingButton}
-          >
+          <div className="cursor-pointer" onClick={handleClickDeleteDrawingButton}>
             Delete
           </div>
           <VerticalDivider />
-          <div
-            className="cursor-pointer"
-            onClick={handleClickBringToFrontButton}
-          >
+          <div className="cursor-pointer" onClick={handleClickBringToFrontButton}>
             Bring To Front
           </div>
           <VerticalDivider />
@@ -484,17 +462,11 @@ const Handler = () => {
             Send To Back
           </div>
           <VerticalDivider />
-          <div
-            className="cursor-pointer"
-            onClick={handleClickBringForwardButton}
-          >
+          <div className="cursor-pointer" onClick={handleClickBringForwardButton}>
             Bring Forward
           </div>
           <VerticalDivider />
-          <div
-            className="cursor-pointer"
-            onClick={handleClickSendBackwardButton}
-          >
+          <div className="cursor-pointer" onClick={handleClickSendBackwardButton}>
             Send Backward
           </div>
           <VerticalDivider />

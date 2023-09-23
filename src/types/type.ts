@@ -41,6 +41,11 @@ interface Center {
 export interface Vertex {
   x: number
   y: number
+  type: 'M' | 'L' | 'C' | 'S' | null
+  nextHandlerX?: number
+  nextHandlerY?: number
+  currentHandlerX?: number
+  currentHandlerY?: number
   id: string
 }
 
