@@ -2,14 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { RiCursorFill, RiPencilFill, RiPenNibFill } from 'react-icons/ri'
-import {
-  IoShapes,
-  IoText,
-  IoSquare,
-  IoTriangle,
-  IoEllipse,
-  IoNavigate,
-} from 'react-icons/io5'
+import { IoShapes, IoText, IoSquare, IoTriangle, IoEllipse, IoNavigate } from 'react-icons/io5'
 import { useRecoilState } from 'recoil'
 import { modeAtom } from '@/recoil/atoms'
 import { SubToolBar } from '@/types/type'
@@ -23,10 +16,7 @@ export default function SideToolBar() {
 
   useEffect(() => {
     const handleMouseDown = (event: MouseEvent) => {
-      if (
-        toolBarRef.current &&
-        !toolBarRef.current.contains(event.target as Node)
-      ) {
+      if (toolBarRef.current && !toolBarRef.current.contains(event.target as Node)) {
         setOpenSubToolBar({ type: null })
       }
     }
@@ -69,9 +59,7 @@ export default function SideToolBar() {
       <button
         type="button"
         className={`py-2 w-full hover:text-[#4ea1d3] flex items-center justify-center ${
-          mode.type === 'SELECT' && mode.subType === 'SHAPE'
-            ? 'text-[#4ea1d3]'
-            : ''
+          mode.type === 'SELECT' && mode.subType === 'SHAPE' ? 'text-[#4ea1d3]' : ''
         }`}
         onClick={() => {
           setMode({ type: 'SELECT', subType: 'SHAPE' })
@@ -83,9 +71,7 @@ export default function SideToolBar() {
       <button
         type="button"
         className={`py-2 w-full hover:text-[#4ea1d3] flex items-center justify-center ${
-          mode.type === 'SELECT' && mode.subType === 'VERTEX'
-            ? 'text-[#4ea1d3]'
-            : ''
+          mode.type === 'SELECT' && mode.subType === 'VERTEX' ? 'text-[#4ea1d3]' : ''
         }`}
         onClick={() => {
           setMode({ type: 'SELECT', subType: 'VERTEX' })
@@ -163,7 +149,7 @@ export default function SideToolBar() {
           </div>
         )}
       </div>
-      <button
+      {/* <button
         type="button"
         className={`py-2 w-full hover:text-[#4ea1d3] flex items-center justify-center ${
           mode.type === 'TEXT' ? 'text-[#4ea1d3]' : ''
@@ -175,7 +161,7 @@ export default function SideToolBar() {
         }}
       >
         <IoText size={20} />
-      </button>
+      </button> */}
     </div>
   )
 }
